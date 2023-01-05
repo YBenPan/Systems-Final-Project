@@ -27,7 +27,15 @@ The database will be stored locally. Multiple users will be able to access the d
 | Semaphores                      | Prevent multiple users from modifying the same data concurrently |
 | Finding information about files | Get information about database files and tables                  |
      
-### How you are breaking down the project and who is responsible for which parts.
+### How you are breaking down the project and who is responsible for which parts. 
+
+- Phase 1a: Ben & Frank. Straightforward implementation, so will split work evenly
+
+- Phase 1b: Ben
+
+- Phase 2: Frank
+
+- Phase 3 and 4: Ben & Frank since these are advanced features that require further research together
 
 ### What algorithms and data structures you will be using, and how.
 

@@ -18,13 +18,13 @@ The database will be stored locally. Multiple users will be able to access the d
    
 How you will be using the topics covered in class in the project.
 
-| Technique                       | Description                                     |   |   |   |
-|---------------------------------|-------------------------------------------------|---|---|---|
-| Memory Allocation               | Store query return values                       |   |   |   |
-| Working with files              | Access and modify database files and tables     |   |   |   |
-| Processes (fork)                | Testing concurrency for multiple users          |   |   |   |
-| Sockets                         | Handle multiple connections from users          |   |   |   |
-| Finding information about files | Get information about database files and tables |   |   |   |
+| Technique                       | Description                                     |
+|---------------------------------|-------------------------------------------------|
+| Memory Allocation               | Store query return values                       |
+| Working with files              | Access and modify database files and tables     |
+| Processes (fork)                | Testing concurrency for multiple users          |
+| Sockets                         | Handle multiple connections from users          |
+| Finding information about files | Get information about database files and tables |
      
 How you are breaking down the project and who is responsible for which parts.
   

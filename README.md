@@ -1,5 +1,4 @@
-# Group Name HERE!
-Competitive C Club
+# Competitive C Club
 
 # Members
 Ben Pan
@@ -16,7 +15,7 @@ The database will be stored locally. Multiple users will be able to access the d
   
 # A description of your technical design. This should include:
    
-How you will be using the topics covered in class in the project.
+### How you will be using the topics covered in class in the project.
 
 | Technique                       | Description                                     |
 |---------------------------------|-------------------------------------------------|
@@ -26,10 +25,16 @@ How you will be using the topics covered in class in the project.
 | Sockets                         | Handle multiple connections from users          |
 | Finding information about files | Get information about database files and tables |
      
-How you are breaking down the project and who is responsible for which parts.
-  
-What data structures you will be using and how.
+### How you are breaking down the project and who is responsible for which parts.
      
-What algorithms and /or data structures you will be using, and how.
+### What algorithms and data structures you will be using, and how.
+
+We will start with basic data structures like arrays and linked lists for implementing the database tables/files.
+
+Parsing might require the use of a tree. 
+
+If time allows, we will implement a [B-Tree](https://en.wikipedia.org/wiki/B-tree) which allows search, deletions, and insertions to be done in O(log n) time. For now, we will use linear search and arrays/linked lists instead. 
+
+Another feature we want to implement is the relational model.
     
 # A timeline with expected completion dates of parts of the project.

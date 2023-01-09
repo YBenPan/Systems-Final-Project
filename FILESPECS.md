@@ -4,7 +4,7 @@ Table files will be binary files:
 
 NAME OF FILE: `[table_name].table`
 
-##Version 0:
+## Version 0:
 
 **HEADER:**
 

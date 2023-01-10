@@ -6,21 +6,21 @@
 #include "vector.h"
 
 struct table * init_table(char * tablename, char **columnnames, int colcount){
-  printf("DEBUG T0\n");
+  //printf("DEBUG T0\n");
   struct table * o = calloc(1, sizeof(struct table));
-  printf("DEBUG T1\n");
+  //printf("DEBUG T1\n");
   strncpy(o->name, tablename, 63);
-  printf("DEBUG T2\n");
+  //printf("DEBUG T2\n");
   o->colcount = colcount;
   o->rowcount = 0;
   o->columnnames = calloc(colcount, sizeof(char[64]));
   for(int i = 0; i < colcount; ++i){
-    printf("%s\n", columnnames[i]);
+    //printf("%s\n", columnnames[i]);
     strncpy(o->columnnames[i], columnnames[i], 63);
   }
-  printf("DEBUG T3\n");
+  //printf("DEBUG T3\n");
   o->data = init_vector();
-  printf("DEBUG T4\n");
+  //printf("DEBUG T4\n");
   return o;
 }
 

@@ -1,5 +1,8 @@
-January 9: 
+January 9:
 - 09:45AM: Pitched project idea to Mr. K. Approved. - Both
 - 10:15AM: Defined file specifications in FILESPECS.md - Frank
 - 10:15AM: Defined language specifications in LANGSPECS.md - Ben
 - 2:04PM: Worked a bit on File IO and basic commonly used structs - Frank
+
+January 10:
+- 10:17AM: Finished vector and basic table structures, complete basic init and add_row functions for tables - Frank

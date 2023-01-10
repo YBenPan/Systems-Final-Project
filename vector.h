@@ -3,16 +3,16 @@
 
 // vector of void * pointers
 struct vector{
-	int size;
-	int capacity;
-	void **values;
+  int size;
+  int capacity;
+  void **values;
 };
 
 // vector of ints
 struct intvector{
-	int size;
-	int capacity;
-	int *values;
+  int size;
+  int capacity;
+  int *values;
 };
 
 struct vector * init_vector();

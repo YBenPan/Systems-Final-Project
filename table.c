@@ -7,7 +7,7 @@
 
 struct table * init_table(char * tablename, char **columnnames, int colcount){
   printf("DEBUG T0\n");
-	struct table * o = calloc(1, sizeof(struct table));
+  struct table * o = calloc(1, sizeof(struct table));
   printf("DEBUG T1\n");
   strncpy(o->name, tablename, 63);
   printf("DEBUG T2\n");

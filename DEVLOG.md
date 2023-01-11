@@ -6,3 +6,6 @@ January 9:
 
 January 10:
 - 10:17AM: Finished vector and basic table structures, complete basic init and add_row functions for tables - Frank
+
+January 11:
+- 10:16AM: Worked on (finished but untested) code to read / write tables from files - Frank

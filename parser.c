@@ -1,6 +1,9 @@
+#include <errno.h>
+#include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 int select_table(char *args) {
   // Process args and put together file path
@@ -10,6 +13,17 @@ int select_table(char *args) {
   strcpy(file, file_dir);
   file = strcat(file, table_name);
   printf("%s\n", file);
+
+  // Open table
+  int fd = open(file, O_RDONLY);
+  if (fd == -1) {
+    printf("Table '%s' not found!\n", table_name);
+    exit(errno);
+  }
+
+  // TODO: Select table. If statements to direct function to more operations
+
+  close(fd);
 }
 
 int create_table(char *args) {

@@ -25,6 +25,10 @@ struct table * init_table(char * tablename, char **columnnames, int colcount){
 }
 
 void add_row(struct table * table, struct intvector * row){
+  if(row->size != table->colcount){
+    printf("ERROR: Tried to add row to table with size %d, expected colcount %d, program exiting.\n", row->size, table->colcount);
+    exit(1);
+  }
   add_vector(table->data, row);
   table->rowcount++;
 }

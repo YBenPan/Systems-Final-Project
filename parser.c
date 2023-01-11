@@ -3,7 +3,13 @@
 #include <stdlib.h>
 
 int select_table(char *args) {
-
+  // Process args and put together file path
+  char *table_name = strsep(&args, " ");
+  char *file_dir = "./";
+  char *file = malloc(sizeof(table_name) + 1);
+  strcpy(file, file_dir);
+  file = strcat(file, table_name);
+  printf("%s\n", file);
 }
 
 int create_table(char *args) {
@@ -40,5 +46,5 @@ void master_parser(char *input) {
 }
 
 int main() {
-  master_parser("SELEC table1");
+  master_parser("SELECT table1.tbl");
 }

@@ -11,8 +11,8 @@
 
 // returns 0 if success
 char write_table(struct table * table){
-  char * tablefilename = calloc(72, sizeof(char));
-  strncpy(tablefilename, table->name, 64);
+  char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
+  strncpy(tablefilename, table->name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
   strcat(tablefilename, ".tbl");
   int fd = open(tablefilename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
   if(fd == -1){
@@ -27,7 +27,7 @@ char write_table(struct table * table){
   write(fd, &(table->rowcount), sizeof(int));
   // SECTION 1: COLUMN IDENTIFIERS
   for(int i = 0; i < table->colcount; ++i){
-    write(fd, table->columnnames[i], 64);
+    write(fd, table->columnnames[i], MAXIMUM_CHAR_COUNT_TABLE_NAME);
   }
   // SECTION 2: TABLE DATA
   for(int i = 0; i < table->rowcount; ++i){
@@ -41,8 +41,8 @@ char write_table(struct table * table){
 }
 
 struct table * read_table(char * table_name){
-  char * tablefilename = calloc(72, sizeof(char));
-  strncpy(tablefilename, table_name, 64);
+  char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
+  strncpy(tablefilename, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
   strcat(tablefilename, ".tbl");
   int fd = open(tablefilename, O_RDONLY);
   if(fd == -1){
@@ -67,8 +67,8 @@ struct table * read_table(char * table_name){
     // file version 0 process code
     char **columnnames = calloc(col_count, sizeof(char *));
     for(int i = 0; i < col_count; ++i){
-      char *curname = calloc(64, sizeof(char));
-      read(fd, curname, 64);
+      char *curname = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME, sizeof(char));
+      read(fd, curname, MAXIMUM_CHAR_COUNT_TABLE_NAME);
       columnnames[i] = curname;
     }
     table = init_table(table_name, columnnames, col_count);

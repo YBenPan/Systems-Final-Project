@@ -27,7 +27,34 @@ int select_table(char *args) {
 }
 
 int create_table(char *args) {
+  // Process args and put together file path
+  char *table_name = strsep(&args, " ");
+  char *file_dir = "./";
+  char *file = malloc(sizeof(table_name) + 1);
+  strcpy(file, file_dir);
+  file = strcat(file, table_name);
+  printf("%s\n", file);
 
+  // 2D array for column names. See tabledebug.c
+  char *col_names[64];
+  // table->column_names -> char (*col_names)[64] -> pointer (dynamic array) to 64-sized fixed-length char arrays
+  char *col_input = malloc(sizeof(255));
+  printf("Input column names, separated by space:\n");
+  fgets(col_input, 255, stdin);
+  printf("%s\n", col_input);
+  int col_cnt = 0;
+  while (1) {
+    char *col_name = strsep(&col_input, " ");
+    if (!col_name) {
+      break;
+    }
+    col_names[col_cnt] = malloc(strlen(col_name) + 1);
+    strcpy(col_names[col_cnt++], col_name);
+    printf("%s\n", col_name);
+  }
+  // struct table * table = init_table(table_name, col_names, col_cnt);
+
+  // write_table(table);
 }
 
 int drop_table(char *args) {

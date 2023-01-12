@@ -12,3 +12,5 @@ January 11:
 - 10:14AM: Worked on select_table. Put together file path and open table. - Ben
 - 10:16AM: Worked on (finished but untested) code to read / write tables from files - Frank
 
+January 12:
+- 9:59AM: Fix bugs / segfaults in file IO code - Frank

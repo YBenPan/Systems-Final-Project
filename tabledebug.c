@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "file_io.h"
 #include "vector.h"
 #include "table.h"
 
@@ -28,4 +29,13 @@ int main(){
   //printf("DEBUG 6\n");
   print_table(table);
   //printf("DEBUG 7\n");
+  printf("Trying to write table to file testing.tbl\n");
+  write_table(table);
+  struct table * table2 = read_table("testing");
+  row = init_intvector();
+  for(int i = 0; i < 3; ++i){
+    add_intvector(row, 10-i);
+  }
+  add_row(table, row);
+  print_table(table2);
 }

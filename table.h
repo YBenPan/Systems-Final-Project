@@ -3,9 +3,11 @@
 
 #include "vector.h"
 
+#define MAXIMUM_CHAR_COUNT_TABLE_NAME 64
+
 struct table{
-  char name[64];
-  char (*columnnames)[64];
+  char name[MAXIMUM_CHAR_COUNT_TABLE_NAME];
+  char (*columnnames)[MAXIMUM_CHAR_COUNT_TABLE_NAME];
   int colcount;
   int rowcount;
   struct vector * data; // vector of intvector pointers

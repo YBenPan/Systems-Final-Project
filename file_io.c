@@ -72,7 +72,7 @@ struct table * read_table(char * table_name){
       columnnames[i] = curname;
     }
     table = init_table(table_name, columnnames, col_count);
-    table->rowcount = row_count;
+    //table->rowcount = row_count;
     for(int i = 0; i < col_count; ++i){
       free(columnnames[i]);
     }
@@ -80,9 +80,20 @@ struct table * read_table(char * table_name){
     int * rowbuff = calloc(col_count, sizeof(int));
     for(int i = 0; i < row_count; ++i){
       read(fd, rowbuff, sizeof(int) * col_count);
+      //printf("test input %d\n", i);
       struct intvector * rowvec = init_intvector();
       resize_intvector(rowvec, col_count);
       memcpy(rowvec->values, rowbuff, sizeof(int) * col_count);
+/*
+      for(int i = 0; i < col_count; ++i){
+        printf("rowbuff %d: %d\n", i, rowbuff[i]);
+      }
+      for(int i = 0; i < col_count; ++i){
+        printf("rowvec->values %d: %d\n", i, rowvec->values[i]);
+      }
+*/
+      rowvec->size = col_count;
+      add_row(table, rowvec);
     }
     free(rowbuff);
   } else {

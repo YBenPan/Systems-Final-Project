@@ -43,6 +43,7 @@ void print_table(struct table * table){
   }
   printf("\n");
   for(int i = 0; i < table->rowcount; i++){
+    //printf("PRINT DEBUG %d\n", i);
     printf("Row %d: [", i);
     struct intvector * currow = (table->data->values)[i];
     for(int j = 0; j < table->colcount; j++){

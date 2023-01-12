@@ -32,10 +32,14 @@ int main(){
   printf("Trying to write table to file testing.tbl\n");
   write_table(table);
   struct table * table2 = read_table("testing");
+  //printf("COLCOUNT: %d\n", table2->colcount);
+  //printf("ROWCOUNT: %d\n", table2->rowcount);
+  print_table(table2);
   row = init_intvector();
   for(int i = 0; i < 3; ++i){
     add_intvector(row, 10-i);
   }
-  add_row(table, row);
+  printf("Adding 1 more row:\n");
+  add_row(table2, row);
   print_table(table2);
 }

@@ -2,11 +2,14 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "table.h"
-#include "filo_io.h"
+#include "file_io.h"
 #include "vector.h"
 
+// returns 0 if success
 char write_table(struct table * table){
   char * tablefilename = calloc(72, sizeof(char));
   strncpy(tablefilename, table->name, 64);
@@ -34,6 +37,7 @@ char write_table(struct table * table){
   }
   free(tablefilename);
   close(fd);
+  return 0;
 }
 
 struct table * read_table(char * table_name){
@@ -61,18 +65,35 @@ struct table * read_table(char * table_name){
   struct table * table = NULL;
   if(file_version == 0){
     // file version 0 process code
-    char (*columnnames)[64] = calloc(colcount, sizeof(char[64]));
+    char **columnnames = calloc(col_count, sizeof(char *));
     for(int i = 0; i < col_count; ++i){
-      read(fd, columnnames[i], 64);
+      char *curname = calloc(64, sizeof(char));
+      read(fd, curname, 64);
+      columnnames[i] = curname;
     }
-    table = init_table(table_name, columnnames, colcount);
+    table = init_table(table_name, columnnames, col_count);
+    //table->rowcount = row_count;
+    for(int i = 0; i < col_count; ++i){
+      free(columnnames[i]);
+    }
     free(columnnames);
-    int * rowbuff = calloc(colcount, sizeof(int));
-    for(int i = 0; i < rowcount; ++i){
-      read(fd, rowbuff, sizeof(int) * colcount);
+    int * rowbuff = calloc(col_count, sizeof(int));
+    for(int i = 0; i < row_count; ++i){
+      read(fd, rowbuff, sizeof(int) * col_count);
+      //printf("test input %d\n", i);
       struct intvector * rowvec = init_intvector();
-      resize_intvector(rowvec, colcount);
-      memcpy(rowvec->data, rowbuff, sizeof(int) * colcount);
+      resize_intvector(rowvec, col_count);
+      memcpy(rowvec->values, rowbuff, sizeof(int) * col_count);
+/*
+      for(int i = 0; i < col_count; ++i){
+        printf("rowbuff %d: %d\n", i, rowbuff[i]);
+      }
+      for(int i = 0; i < col_count; ++i){
+        printf("rowvec->values %d: %d\n", i, rowvec->values[i]);
+      }
+*/
+      rowvec->size = col_count;
+      add_row(table, rowvec);
     }
     free(rowbuff);
   } else {
@@ -81,4 +102,5 @@ struct table * read_table(char * table_name){
   }
   free(tablefilename);
   close(fd);
+  return table;
 }

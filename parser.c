@@ -34,6 +34,11 @@ int drop_table(char *args) {
 
 }
 
+void usr_input(char *input) {
+  printf("Input table command:\n");
+  fgets(input, 255, stdin);
+}
+
 void master_parser(char *input) {
   // Create a copy of input string
   char *input_str = malloc(sizeof(input));
@@ -60,5 +65,7 @@ void master_parser(char *input) {
 }
 
 int main() {
-  master_parser("SELECT table1.tbl");
+  char input[255];
+  usr_input(input);
+  master_parser(input);
 }

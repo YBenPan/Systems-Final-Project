@@ -111,7 +111,7 @@ char * csv_ify(char *term){
   char *curpos = buff + 1;
   //printf("DEBUG 1a\n");
   while(*term){
-    if(*term == CSV_ESCAPE_CHARACTER || *term == CSV_DELIMITER_CHARACTER){
+    if(*term == CSV_ESCAPE_CHARACTER){
       *curpos = CSV_ESCAPE_CHARACTER;
       curpos++;
     }
@@ -119,6 +119,8 @@ char * csv_ify(char *term){
     curpos++;
     term++;
   }
+  *curpos = CSV_ESCAPE_CHARACTER;
+  curpos++;
   *curpos = '\0';
   //printf("DEBUG 1b\n");
   return buff;

@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "parser.h"
+
 int select_table(char *args) {
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
@@ -56,7 +58,7 @@ int create_table(char *args) {
   }
   struct table * table = init_table(table_name, col_names, col_cnt);
 
-  write_table(table);
+  // write_table(table);
 }
 
 int drop_table(char *args) {
@@ -91,10 +93,4 @@ void master_parser(char *input) {
     printf("Invalid command '%s'!\n", cmd);
     exit(EXIT_FAILURE);
   }
-}
-
-int main() {
-  char input[255];
-  usr_input(input);
-  master_parser(input);
 }

@@ -18,3 +18,4 @@ January 12:
 
 January 13:
 - 10:05AM: Work on export table to CSV functionality - Frank
+- 10:15AM: Lots of git actions to merge table functionality into parser - Ben

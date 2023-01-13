@@ -58,7 +58,7 @@ int create_table(char *args) {
   }
   struct table * table = init_table(table_name, col_names, col_cnt);
 
-  // write_table(table);
+  write_table(table);
 }
 
 int drop_table(char *args) {

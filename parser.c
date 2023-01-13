@@ -42,6 +42,8 @@ int create_table(char *args) {
   printf("Input column names, separated by space:\n");
   fgets(col_input, 255, stdin);
   printf("%s\n", col_input);
+
+  // Parse the column names
   int col_cnt = 0;
   while (1) {
     char *col_name = strsep(&col_input, " ");
@@ -52,9 +54,9 @@ int create_table(char *args) {
     strcpy(col_names[col_cnt++], col_name);
     printf("%s\n", col_name);
   }
-  // struct table * table = init_table(table_name, col_names, col_cnt);
+  struct table * table = init_table(table_name, col_names, col_cnt);
 
-  // write_table(table);
+  write_table(table);
 }
 
 int drop_table(char *args) {

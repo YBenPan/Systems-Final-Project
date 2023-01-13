@@ -104,3 +104,59 @@ struct table * read_table(char * table_name){
   close(fd);
   return table;
 }
+
+char * csv_ify(char *term){
+  char *buff = calloc(2 * strlen(term) + 10, sizeof(char));
+  buff[0] = CSV_ESCAPE_CHARACTER;
+  char *curpos = buff + 1;
+  //printf("DEBUG 1a\n");
+  while(*term){
+    if(*term == CSV_ESCAPE_CHARACTER){
+      *curpos = CSV_ESCAPE_CHARACTER;
+      curpos++;
+    }
+    *curpos = *term;
+    curpos++;
+    term++;
+  }
+  *curpos = CSV_ESCAPE_CHARACTER;
+  curpos++;
+  *curpos = '\0';
+  //printf("DEBUG 1b\n");
+  return buff;
+}
+
+// returns 0 if successful
+char write_table_to_csv(struct table * table, char * output_file){
+  int fd = open(output_file, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+  if(fd == -1){
+    printf("Error when attempting to open the table file for writing, exiting: %s\n", strerror(errno));
+    exit(1);
+  }
+  char delim_char = CSV_DELIMITER_CHARACTER;
+  char newline_char = '\n';
+  //printf("DEBUG 1\n");
+  for(int i = 0; i < table->colcount; ++i){
+    if(i != 0){
+      write(fd, &delim_char, sizeof(char));
+    }
+    char *csvifed_name = csv_ify(table->columnnames[i]);
+    write(fd, csvifed_name, strlen(csvifed_name) * sizeof(char));
+    free(csvifed_name);
+  }
+  //printf("DEBUG 2\n");
+  write(fd, &newline_char, sizeof(char));
+  for(int i = 0; i < table->rowcount; ++i){
+    struct intvector *currow = (table->data->values)[i];
+    for(int j = 0; j < table->colcount; ++j){
+      if(j != 0){
+        write(fd, &delim_char, sizeof(char));
+      }
+      int cur = currow->values[j];
+      dprintf(fd, "%d", cur);
+    }
+    write(fd, &newline_char, sizeof(char));
+  }
+  close(fd);
+  return 0;
+}

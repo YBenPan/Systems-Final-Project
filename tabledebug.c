@@ -8,7 +8,7 @@ int main(){
   char *colnames[3];
   colnames[0] = "col 0";
   colnames[1] = "col 1";
-  colnames[2] = "col 2";
+  colnames[2] = "delimiter, \"testing\" column";
   //printf("DEBUG 0\n");
   struct table * table = init_table("testing", colnames, 3);
   //printf("DEBUG 1\n");
@@ -39,7 +39,14 @@ int main(){
   for(int i = 0; i < 3; ++i){
     add_intvector(row, 10-i);
   }
-  printf("Adding 1 more row:\n");
+  printf("Adding 2 more rows:\n");
+  add_row(table2, row);
+  row = init_intvector();
+  for(int i = 0; i < 3; ++i){
+    add_intvector(row, 12-i);
+  }
   add_row(table2, row);
   print_table(table2);
+  printf("Writing table to tabletest.csv\n");
+  write_table_to_csv(table2, "tabletest.csv");
 }

@@ -2,14 +2,17 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "table.h"
-#include "filo_io.h"
+#include "file_io.h"
 #include "vector.h"
 
+// returns 0 if success
 char write_table(struct table * table){
-  char * tablefilename = calloc(72, sizeof(char));
-  strncpy(tablefilename, table->name, 64);
+  char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
+  strncpy(tablefilename, table->name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
   strcat(tablefilename, ".tbl");
   int fd = open(tablefilename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
   if(fd == -1){
@@ -24,7 +27,7 @@ char write_table(struct table * table){
   write(fd, &(table->rowcount), sizeof(int));
   // SECTION 1: COLUMN IDENTIFIERS
   for(int i = 0; i < table->colcount; ++i){
-    write(fd, table->columnnames[i], 64);
+    write(fd, table->columnnames[i], MAXIMUM_CHAR_COUNT_TABLE_NAME);
   }
   // SECTION 2: TABLE DATA
   for(int i = 0; i < table->rowcount; ++i){
@@ -34,11 +37,12 @@ char write_table(struct table * table){
   }
   free(tablefilename);
   close(fd);
+  return 0;
 }
 
 struct table * read_table(char * table_name){
-  char * tablefilename = calloc(72, sizeof(char));
-  strncpy(tablefilename, table_name, 64);
+  char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
+  strncpy(tablefilename, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
   strcat(tablefilename, ".tbl");
   int fd = open(tablefilename, O_RDONLY);
   if(fd == -1){
@@ -61,18 +65,35 @@ struct table * read_table(char * table_name){
   struct table * table = NULL;
   if(file_version == 0){
     // file version 0 process code
-    char (*columnnames)[64] = calloc(colcount, sizeof(char[64]));
+    char **columnnames = calloc(col_count, sizeof(char *));
     for(int i = 0; i < col_count; ++i){
-      read(fd, columnnames[i], 64);
+      char *curname = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME, sizeof(char));
+      read(fd, curname, MAXIMUM_CHAR_COUNT_TABLE_NAME);
+      columnnames[i] = curname;
     }
-    table = init_table(table_name, columnnames, colcount);
+    table = init_table(table_name, columnnames, col_count);
+    //table->rowcount = row_count;
+    for(int i = 0; i < col_count; ++i){
+      free(columnnames[i]);
+    }
     free(columnnames);
-    int * rowbuff = calloc(colcount, sizeof(int));
-    for(int i = 0; i < rowcount; ++i){
-      read(fd, rowbuff, sizeof(int) * colcount);
+    int * rowbuff = calloc(col_count, sizeof(int));
+    for(int i = 0; i < row_count; ++i){
+      read(fd, rowbuff, sizeof(int) * col_count);
+      //printf("test input %d\n", i);
       struct intvector * rowvec = init_intvector();
-      resize_intvector(rowvec, colcount);
-      memcpy(rowvec->data, rowbuff, sizeof(int) * colcount);
+      resize_intvector(rowvec, col_count);
+      memcpy(rowvec->values, rowbuff, sizeof(int) * col_count);
+/*
+      for(int i = 0; i < col_count; ++i){
+        printf("rowbuff %d: %d\n", i, rowbuff[i]);
+      }
+      for(int i = 0; i < col_count; ++i){
+        printf("rowvec->values %d: %d\n", i, rowvec->values[i]);
+      }
+*/
+      rowvec->size = col_count;
+      add_row(table, rowvec);
     }
     free(rowbuff);
   } else {
@@ -81,4 +102,61 @@ struct table * read_table(char * table_name){
   }
   free(tablefilename);
   close(fd);
+  return table;
+}
+
+char * csv_ify(char *term){
+  char *buff = calloc(2 * strlen(term) + 10, sizeof(char));
+  buff[0] = CSV_ESCAPE_CHARACTER;
+  char *curpos = buff + 1;
+  //printf("DEBUG 1a\n");
+  while(*term){
+    if(*term == CSV_ESCAPE_CHARACTER){
+      *curpos = CSV_ESCAPE_CHARACTER;
+      curpos++;
+    }
+    *curpos = *term;
+    curpos++;
+    term++;
+  }
+  *curpos = CSV_ESCAPE_CHARACTER;
+  curpos++;
+  *curpos = '\0';
+  //printf("DEBUG 1b\n");
+  return buff;
+}
+
+// returns 0 if successful
+char write_table_to_csv(struct table * table, char * output_file){
+  int fd = open(output_file, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+  if(fd == -1){
+    printf("Error when attempting to open the table file for writing, exiting: %s\n", strerror(errno));
+    exit(1);
+  }
+  char delim_char = CSV_DELIMITER_CHARACTER;
+  char newline_char = '\n';
+  //printf("DEBUG 1\n");
+  for(int i = 0; i < table->colcount; ++i){
+    if(i != 0){
+      write(fd, &delim_char, sizeof(char));
+    }
+    char *csvifed_name = csv_ify(table->columnnames[i]);
+    write(fd, csvifed_name, strlen(csvifed_name) * sizeof(char));
+    free(csvifed_name);
+  }
+  //printf("DEBUG 2\n");
+  write(fd, &newline_char, sizeof(char));
+  for(int i = 0; i < table->rowcount; ++i){
+    struct intvector *currow = (table->data->values)[i];
+    for(int j = 0; j < table->colcount; ++j){
+      if(j != 0){
+        write(fd, &delim_char, sizeof(char));
+      }
+      int cur = currow->values[j];
+      dprintf(fd, "%d", cur);
+    }
+    write(fd, &newline_char, sizeof(char));
+  }
+  close(fd);
+  return 0;
 }

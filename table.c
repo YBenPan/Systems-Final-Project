@@ -9,14 +9,14 @@ struct table * init_table(char * tablename, char **columnnames, int colcount){
   //printf("DEBUG T0\n");
   struct table * o = calloc(1, sizeof(struct table));
   //printf("DEBUG T1\n");
-  strncpy(o->name, tablename, 63);
+  strncpy(o->name, tablename, MAXIMUM_CHAR_COUNT_TABLE_NAME-1);
   //printf("DEBUG T2\n");
   o->colcount = colcount;
   o->rowcount = 0;
-  o->columnnames = calloc(colcount, sizeof(char[64]));
+  o->columnnames = calloc(colcount, sizeof(char[MAXIMUM_CHAR_COUNT_TABLE_NAME]));
   for(int i = 0; i < colcount; ++i){
     //printf("%s\n", columnnames[i]);
-    strncpy(o->columnnames[i], columnnames[i], 63);
+    strncpy(o->columnnames[i], columnnames[i], MAXIMUM_CHAR_COUNT_TABLE_NAME-1);
   }
   //printf("DEBUG T3\n");
   o->data = init_vector();
@@ -43,6 +43,7 @@ void print_table(struct table * table){
   }
   printf("\n");
   for(int i = 0; i < table->rowcount; i++){
+    //printf("PRINT DEBUG %d\n", i);
     printf("Row %d: [", i);
     struct intvector * currow = (table->data->values)[i];
     for(int j = 0; j < table->colcount; j++){

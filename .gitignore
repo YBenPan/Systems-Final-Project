@@ -43,6 +43,10 @@ tabledebug
 *.idb
 *.pdb
 
+# Table & CSV files
+*.tbl
+*.csv
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd

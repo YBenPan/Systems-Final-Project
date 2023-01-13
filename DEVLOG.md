@@ -12,3 +12,9 @@ January 11:
 - 10:14AM: Worked on select_table. Put together file path and open table. - Ben
 - 10:16AM: Worked on (finished but untested) code to read / write tables from files - Frank
 
+January 12:
+- 9:59AM: Fix bugs / segfaults in file IO code - Frank
+- 10:15AM: Worked on create_table. Added user input for CREATE and master_parser - Ben
+
+January 13:
+- 10:05AM: Work on export table to CSV functionality - Frank

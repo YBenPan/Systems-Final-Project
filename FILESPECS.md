@@ -2,7 +2,7 @@
 
 Table files will be binary files:
 
-NAME OF FILE: `[table_name].table`
+NAME OF FILE: `[table_name].tbl`
 
 ## Version 0:
 

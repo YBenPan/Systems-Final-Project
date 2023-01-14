@@ -21,7 +21,7 @@ int select_table(char *args) {
   strcpy(file, file_dir);
   file[strlen(file)] = '\0';
   file = strcat(file, table_name);
-  printf("%s\n", file);
+  // printf("%s\n", file);
 
   // Open table
   int fd = open(file, O_RDONLY);
@@ -68,13 +68,30 @@ int create_table(char *args) {
     return 0;
   }
   else {
-    printf("Table creation failed: %s\n", strerror(errno));
+    printf("Creation of table '%s' failed: %s\n", table_name, strerror(errno));
     exit(EXIT_FAILURE);
   }
 }
 
 int drop_table(char *args) {
+  // Process args and put together file path
+  char *table_name = strsep(&args, " ");
+  char *file_dir = "./";
+  char *file = malloc(sizeof(table_name) + 1);
+  strcpy(file, file_dir);
+  strcat(file, table_name);
+  char *file_ext = ".tbl";
+  strcat(file, file_ext);
+  // printf("%s\n", file);
 
+  if (remove(file) == -1) {
+    printf("Dropping table '%s' failed: %s\n", table_name, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  else {
+    printf("Table '%s' dropped successfully!\n", table_name);
+    return 0;
+  }
 }
 
 void usr_input(char *input) {

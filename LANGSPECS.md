@@ -4,53 +4,52 @@ Similar to SQL for now. Will update later to a more user-friendly version.
 
 Note: the commands below are reserved keywords. Tables / files / rows / columns are banned from using them. 
 
+## Global Commands (Tier 1)
+
 ### SELECT
 
 ```
-SELECT column_name 
-FROM table_name 
+SELECT table_name
 ```
 
-### UPDATE
+### CREATE
 
 ```
-UPDATE table_name
-SET some_column = some_value
-WHERE some_column = some_value;
+CREATE table_name
 ```
 
-### DELETE
+### DROP
 
 ```
-DELETE FROM table_name
-WHERE some_column = some_value;
+DROP table_name
 ```
 
-### INSERT INTO
+## Table Commands (Tier 2)
+
+### ADDROW
 
 ```
-INSERT INTO table_name (column_1, column_2, column_3) 
-VALUES (value_1, 'value_2', value_3);
+ADDROW (value_1,value_2,value_3)
 ```
 
-### CREATE TABLE
+### DELROW: ???
 
+### SETROW: ???
+
+### ADDCOL: ???
 ```
-CREATE TABLE table_name (
-  column_1 datatype, 
-  column_2 datatype, 
-  column_3 datatype
-);
+ADDCOL col_name
 ```
 
-### ALTER TABLE
+### DELCOL: ???
+```
+DELCOL col_name
+```
 
-```
-ALTER TABLE table_name 
-ADD column_name datatype;
-```
-### DROP TABLE
+### QUERY: ???
 
+### SORT
 ```
-DROP TABLE table_name;
+SORT
 ```
+

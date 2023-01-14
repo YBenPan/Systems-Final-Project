@@ -13,7 +13,7 @@ void chop_newline(char *s) {
     s[ln] = '\0';
 }
 
-int add_row_cmd(char *args) {
+int add_row_cmd(struct table * table, char *args) {  
   // Check syntax "(...)" and remove parentheses
   if (args[0] != '(' || args[strlen(args) - 1] != ')') {
     printf("Syntax Error: Row must be surrounded by parentheses!\n");
@@ -24,19 +24,24 @@ int add_row_cmd(char *args) {
   
   // Form vector
   struct intvector *row = init_intvector();
-  char *row_item; int row_num;
+  char *row_item; int row_num; 
+
+  // Deconstruct user input into row elements
   while ((row_item = strsep(&args, " "))) {
     sscanf(row_item, "%d", &row_num);
-    add_intvector(row, row_num);
+    add_intvector(row, row_num); 
   }
 
-  // TODO: need to check that row_size = table.row_size
+  // Add row using function in table.c
+  add_row(table, row);
+  printf("Row added succesfully!\n");
+
+  return 0;
 }
 
 void table_parser(struct table * table) {
   // Table variables for ease of access 
   char *table_name = table->name;
-  int col_cnt = table->colcount; 
 
   // Prompt for user input
   char *input_str = malloc(MAX_CMD_LENGTH);
@@ -51,7 +56,8 @@ void table_parser(struct table * table) {
     print_table(table);
   }
   else if (!strcmp(cmd, "ADDROW")) {
-    add_row_cmd(input_str);
+    add_row_cmd(table, input_str);
+    // TODO: write changes in table to file
   }
   else if (!strcmp(cmd, "DELROW")) { // TODO: Implement DELROW
 
@@ -96,6 +102,7 @@ int select_table(char *args) {
   table_parser(table);
   
   // TODO: response after table_parser
+  return 0;
 }
 
 int create_table(char *args) {

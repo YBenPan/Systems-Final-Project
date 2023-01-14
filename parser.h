@@ -8,7 +8,7 @@
 
 void chop_newline(char *s);
 
-int add_row_cmd(char *args);
+int add_row_cmd(struct table * table, char *args);
 
 void table_parser(struct table * table);
 

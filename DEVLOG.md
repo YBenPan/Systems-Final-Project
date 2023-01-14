@@ -21,3 +21,6 @@ January 13:
 - 10:15AM: Lots of git actions to merge table functionality into parser - Ben
 - 11:34PM: Finished create_table functionality - Ben
 - 11:53PM: Finished drop_table functionality - Ben
+
+January 14: 
+- 12:36AM: Finished select_table functionality - Ben

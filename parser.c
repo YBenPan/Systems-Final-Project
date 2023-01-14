@@ -34,7 +34,11 @@ int add_row_cmd(struct table * table, char *args) {
 
   // Add row using function in table.c
   add_row(table, row);
-  printf("Row added succesfully!\n");
+
+  // Write to table
+  // TODO: Edit instead of overwriting the whole table. Implement edit_table
+  write_table(table);
+  printf("Row added successfully to table '%s'!\n", table->name);
 
   return 0;
 }

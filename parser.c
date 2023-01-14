@@ -7,6 +7,8 @@
 
 #include "parser.h"
 
+// TODO: Free memory!
+
 void chop_newline(char *s) {
   size_t ln = strlen(s) - 1;
   if (*s && s[ln] == '\n') 
@@ -24,15 +26,25 @@ int select_table(char *args) {
   // printf("%s\n", file);
 
   // Open table
-  int fd = open(file, O_RDONLY);
-  if (fd == -1) {
-    printf("Table '%s' not found!\n", table_name);
-    exit(errno);
-  }
+  struct table * table = read_table(table_name);
+  
+  // Prompt for user input
+  char *input_str[MAX_CMD_LENGTH];
+  printf("Opened table '%s'. Input table command:\n", table_name);
+  fgets(input_str, MAX_CMD_LENGTH, stdin);
+  chop_newline(input_str);
 
   // TODO: Select table. If statements to direct function to more operations
+  if (!strcmp(input_str, "PRINT")) {
+    print_table(table);
+  }
+  else if (!strcmp(input_str, "ADDROW")) {
 
-  close(fd);
+  }
+  else {
+    printf("Invalid command '%s'!\n", input_str);
+    exit(EXIT_FAILURE);
+  }
 }
 
 int create_table(char *args) {
@@ -95,7 +107,7 @@ int drop_table(char *args) {
 }
 
 void usr_input(char *input) {
-  printf("Input table command:\n");
+  printf("Input global command to start:\n");
   fgets(input, MAX_CMD_LENGTH, stdin);
   chop_newline(input);
 }

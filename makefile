@@ -22,6 +22,5 @@ vector.o: vector.c vector.h
 
 clean:
 	rm -f *.o
-	rm -f *.tbl
 	rm -f tabledebug
 	rm -f parserdebug

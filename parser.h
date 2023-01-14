@@ -8,7 +8,7 @@
 
 void chop_newline(char *s);
 
-void table_parser(struct table * table, char *table_name);
+void table_parser(struct table * table);
 
 int select_table(char *args);
 

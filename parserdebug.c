@@ -6,5 +6,5 @@
 int main() {
   char input[MAX_CMD_LENGTH];
   usr_input(input);
-  master_parser(input);
+  global_parser(input);
 }

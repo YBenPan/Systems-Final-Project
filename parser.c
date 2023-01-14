@@ -13,45 +13,64 @@ void chop_newline(char *s) {
     s[ln] = '\0';
 }
 
-void table_parser(struct table * table, char *table_name) {
+void table_parser(struct table * table) {
+  // Table variables for ease of access 
+  char *table_name = table->name;
+  int col_cnt = table->colcount; 
+
   // Prompt for user input
-  char *input_str[MAX_CMD_LENGTH];
+  char *input_str = malloc(MAX_CMD_LENGTH);
   printf("Opened table '%s'. Input table command:\n", table_name);
   fgets(input_str, MAX_CMD_LENGTH, stdin);
   chop_newline(input_str);
 
+  char *cmd = strsep(&input_str, " ");
+
   // Router
-  if (!strcmp(input_str, "PRINT")) {
+  if (!strcmp(cmd, "PRINT")) {
     print_table(table);
   }
-  else if (!strcmp(input_str, "ADDROW")) { // TODO: Implement ADDROW and parse into vectors
-    // Prompt user for row
+  else if (!strcmp(cmd, "ADDROW")) {
+    // Check syntax "(...)" and remove parentheses
+    if (input_str[0] != '(' || input_str[strlen(input_str) - 1] != ')') {
+      printf("Syntax Error: Row must be surrounded by parentheses!\n");
+      exit(EXIT_FAILURE);
+    }
+    strsep(&input_str, "(");
+    input_str[strlen(input_str) - 1] = '\0';
     
+    // Form vector
+    struct intvector *row = init_intvector();
+    char *row_item; int row_num;
+    while ((row_item = strsep(&input_str, " "))) {
+      sscanf(row_item, "%d", &row_num);
+      add_intvector(row, row_num);
+    }
   }
-  else if (!strcmp(input_str, "DELROW")) { // TODO: Implement DELROW
+  else if (!strcmp(cmd, "DELROW")) { // TODO: Implement DELROW
 
   }
-  else if (!strcmp(input_str, "SETROW")) { // TODO: Implement SETROW
+  else if (!strcmp(cmd, "SETROW")) { // TODO: Implement SETROW
 
   }
-  else if (!strcmp(input_str, "UPDATE")) { // TODO: Implement UPDATE
+  else if (!strcmp(cmd, "UPDATE")) { // TODO: Implement UPDATE
 
   }
-  else if (!strcmp(input_str, "ADDCOL")) { // TODO: Implement ADDCOL
+  else if (!strcmp(cmd, "ADDCOL")) { // TODO: Implement ADDCOL
 
   }
-  else if (!strcmp(input_str, "DELCOL")) { // TODO: Implement DELCOL
+  else if (!strcmp(cmd, "DELCOL")) { // TODO: Implement DELCOL
 
   }
-  else if (!strcmp(input_str, "QUERY")) { // TODO: Implement QUERY
+  else if (!strcmp(cmd, "QUERY")) { // TODO: Implement QUERY
 
   }
-  else if (!strcmp(input_str, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
+  else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
 
   }
   else {
     // TODO: Ask user to try again instead, within SELECT
-    printf("Invalid command '%s'!\n", input_str);
+    printf("Invalid command '%s'!\n", cmd);
     exit(EXIT_FAILURE);
   }
 }
@@ -68,7 +87,7 @@ int select_table(char *args) {
 
   // Open table
   struct table * table = read_table(table_name);
-  table_parser(table, table_name);
+  table_parser(table);
   
   // TODO: response after table_parser
 }

@@ -7,8 +7,6 @@
 
 #include "parser.h"
 
-// TODO: Free memory!
-
 void chop_newline(char *s) {
   size_t ln = strlen(s) - 1;
   if (*s && s[ln] == '\n') 
@@ -34,7 +32,7 @@ int select_table(char *args) {
   fgets(input_str, MAX_CMD_LENGTH, stdin);
   chop_newline(input_str);
 
-  // TODO: Select table. If statements to direct function to more operations
+  // Router
   if (!strcmp(input_str, "PRINT")) {
     print_table(table);
   }
@@ -42,6 +40,7 @@ int select_table(char *args) {
 
   }
   else {
+    // TODO: Ask user to try again instead, within SELECT
     printf("Invalid command '%s'!\n", input_str);
     exit(EXIT_FAILURE);
   }
@@ -63,6 +62,7 @@ int create_table(char *args) {
   printf("Input column names, separated by space:\n");
   fgets(col_input, MAX_CMD_LENGTH, stdin);
   chop_newline(col_input);
+
   // Parse the column names
   int col_cnt = 0;
   while (1) {
@@ -74,8 +74,16 @@ int create_table(char *args) {
     strcpy(col_names[col_cnt++], col_name);
     // printf("%s\n", col_name);
   }
+
+  // Initialize table and free col_names
   struct table * table = init_table(table_name, col_names, col_cnt);
+  for(int i = 0; i < col_cnt; ++i){
+    free(col_names[i]);
+  }
+
+  // Write table
   if (!write_table(table)) {
+    free(table);
     printf("Table '%s' created successfully!\n", table_name);
     return 0;
   }
@@ -133,6 +141,7 @@ void master_parser(char *input) {
   }
   else {
     printf("Invalid command '%s'!\n", cmd);
+    // TODO: Ask user to try again instead
     exit(EXIT_FAILURE);
   }
 }

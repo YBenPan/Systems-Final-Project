@@ -1,9 +1,10 @@
 #include "file_io.h"
 #include "vector.h"
 #include "table.h"
+#include "parser.h"
 
 int main() {
-  char input[255];
+  char input[MAX_CMD_LENGTH];
   usr_input(input);
   master_parser(input);
 }

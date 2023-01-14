@@ -38,11 +38,11 @@ int create_table(char *args) {
   printf("%s\n", file);
 
   // 2D array for column names. See tabledebug.c
-  char *col_names[64];
+  char *col_names[MAXIMUM_CHAR_COUNT_TABLE_NAME];
   // table->column_names -> char (*col_names)[64] -> pointer (dynamic array) to 64-sized fixed-length char arrays
-  char *col_input = malloc(sizeof(255));
+  char *col_input = malloc(sizeof(MAX_CMD_LENGTH));
   printf("Input column names, separated by space:\n");
-  fgets(col_input, 255, stdin);
+  fgets(col_input, MAX_CMD_LENGTH, stdin);
   printf("%s\n", col_input);
 
   // Parse the column names
@@ -67,7 +67,7 @@ int drop_table(char *args) {
 
 void usr_input(char *input) {
   printf("Input table command:\n");
-  fgets(input, 255, stdin);
+  fgets(input, MAX_CMD_LENGTH, stdin);
 }
 
 void master_parser(char *input) {

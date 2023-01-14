@@ -36,7 +36,28 @@ int select_table(char *args) {
   if (!strcmp(input_str, "PRINT")) {
     print_table(table);
   }
-  else if (!strcmp(input_str, "ADDROW")) {
+  else if (!strcmp(input_str, "ADDROW")) { // TODO: Implement ADDROW and parse into vectors
+
+  }
+  else if (!strcmp(input_str, "DELROW")) { // TODO: Implement DELROW
+
+  }
+  else if (!strcmp(input_str, "SETROW")) { // TODO: Implement SETROW
+
+  }
+  else if (!strcmp(input_str, "UPDATE")) { // TODO: Implement UPDATE
+
+  }
+  else if (!strcmp(input_str, "ADDCOL")) { // TODO: Implement ADDCOL
+
+  }
+  else if (!strcmp(input_str, "DELCOL")) { // TODO: Implement DELCOL
+
+  }
+  else if (!strcmp(input_str, "QUERY")) { // TODO: Implement QUERY
+
+  }
+  else if (!strcmp(input_str, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
 
   }
   else {

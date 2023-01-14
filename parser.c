@@ -47,11 +47,10 @@ int create_table(char *args) {
   // 2D array for column names. See tabledebug.c
   char *col_names[MAXIMUM_CHAR_COUNT_TABLE_NAME];
   // table->column_names -> char (*col_names)[64] -> pointer (dynamic array) to 64-sized fixed-length char arrays
-  char *col_input = malloc(sizeof(MAX_CMD_LENGTH));
+  char *col_input = malloc(MAX_CMD_LENGTH);
   printf("Input column names, separated by space:\n");
   fgets(col_input, MAX_CMD_LENGTH, stdin);
   chop_newline(col_input);
-
   // Parse the column names
   int col_cnt = 0;
   while (1) {
@@ -59,7 +58,7 @@ int create_table(char *args) {
     if (!col_name) {
       break;
     }
-    col_names[col_cnt] = malloc(strlen(col_name) + 1);
+    col_names[col_cnt] = malloc((strlen(col_name) + 1) * sizeof(*col_names[col_cnt]));
     strcpy(col_names[col_cnt++], col_name);
     // printf("%s\n", col_name);
   }

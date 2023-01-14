@@ -13,19 +13,7 @@ void chop_newline(char *s) {
     s[ln] = '\0';
 }
 
-int select_table(char *args) {
-  // Process args and put together file path
-  char *table_name = strsep(&args, " ");
-  char *file_dir = "./";
-  char *file = malloc(sizeof(table_name) + 1);
-  strcpy(file, file_dir);
-  file[strlen(file)] = '\0';
-  file = strcat(file, table_name);
-  // printf("%s\n", file);
-
-  // Open table
-  struct table * table = read_table(table_name);
-  
+void table_parser(struct table * table, char *table_name) {
   // Prompt for user input
   char *input_str[MAX_CMD_LENGTH];
   printf("Opened table '%s'. Input table command:\n", table_name);
@@ -37,7 +25,8 @@ int select_table(char *args) {
     print_table(table);
   }
   else if (!strcmp(input_str, "ADDROW")) { // TODO: Implement ADDROW and parse into vectors
-
+    // Prompt user for row
+    
   }
   else if (!strcmp(input_str, "DELROW")) { // TODO: Implement DELROW
 
@@ -65,6 +54,23 @@ int select_table(char *args) {
     printf("Invalid command '%s'!\n", input_str);
     exit(EXIT_FAILURE);
   }
+}
+
+int select_table(char *args) {
+  // Process args and put together file path
+  char *table_name = strsep(&args, " ");
+  char *file_dir = "./";
+  char *file = malloc(sizeof(table_name) + 1);
+  strcpy(file, file_dir);
+  file[strlen(file)] = '\0';
+  file = strcat(file, table_name);
+  // printf("%s\n", file);
+
+  // Open table
+  struct table * table = read_table(table_name);
+  table_parser(table, table_name);
+  
+  // TODO: response after table_parser
 }
 
 int create_table(char *args) {
@@ -141,7 +147,7 @@ void usr_input(char *input) {
   chop_newline(input);
 }
 
-void master_parser(char *input) {
+void global_parser(char *input) {
   // Create a copy of input string
   char *input_str = malloc(sizeof(input));
   strcpy(input_str, input);

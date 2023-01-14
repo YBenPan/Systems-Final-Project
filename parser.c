@@ -7,12 +7,19 @@
 
 #include "parser.h"
 
+void chop_newline(char *s) {
+  size_t ln = strlen(s) - 1;
+  if (*s && s[ln] == '\n') 
+    s[ln] = '\0';
+}
+
 int select_table(char *args) {
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
   char *file_dir = "./";
   char *file = malloc(sizeof(table_name) + 1);
   strcpy(file, file_dir);
+  file[strlen(file)] = '\0';
   file = strcat(file, table_name);
   printf("%s\n", file);
 
@@ -35,7 +42,7 @@ int create_table(char *args) {
   char *file = malloc(sizeof(table_name) + 1);
   strcpy(file, file_dir);
   file = strcat(file, table_name);
-  printf("%s\n", file);
+  // printf("%s\n", file);
 
   // 2D array for column names. See tabledebug.c
   char *col_names[MAXIMUM_CHAR_COUNT_TABLE_NAME];
@@ -43,7 +50,7 @@ int create_table(char *args) {
   char *col_input = malloc(sizeof(MAX_CMD_LENGTH));
   printf("Input column names, separated by space:\n");
   fgets(col_input, MAX_CMD_LENGTH, stdin);
-  printf("%s\n", col_input);
+  chop_newline(col_input);
 
   // Parse the column names
   int col_cnt = 0;
@@ -54,11 +61,17 @@ int create_table(char *args) {
     }
     col_names[col_cnt] = malloc(strlen(col_name) + 1);
     strcpy(col_names[col_cnt++], col_name);
-    printf("%s\n", col_name);
+    // printf("%s\n", col_name);
   }
   struct table * table = init_table(table_name, col_names, col_cnt);
-
-  write_table(table);
+  if (!write_table(table)) {
+    printf("Table '%s' created successfully!\n", table_name);
+    return 0;
+  }
+  else {
+    printf("Table creation failed: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
 }
 
 int drop_table(char *args) {
@@ -68,6 +81,7 @@ int drop_table(char *args) {
 void usr_input(char *input) {
   printf("Input table command:\n");
   fgets(input, MAX_CMD_LENGTH, stdin);
+  chop_newline(input);
 }
 
 void master_parser(char *input) {

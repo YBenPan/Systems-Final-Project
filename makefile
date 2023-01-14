@@ -21,6 +21,7 @@ vector.o: vector.c vector.h
 	gcc -c $(CFLAGS) vector.c
 
 clean:
-		rm -f *.o
-		rm -f tabledebug
-		rm -f parserdebug
+	rm -f *.o
+	rm -f *.tbl
+	rm -f tabledebug
+	rm -f parserdebug

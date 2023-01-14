@@ -36,26 +36,28 @@ int add_row_cmd(struct table * table, char *args) {
   add_row(table, row);
 
   // Write to table
-  // write_table(table);
-  char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
-  strncpy(tablefilename, table->name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
-  strcat(tablefilename, ".tbl");
+  write_table(table);
+
+  // TODO: Append to table instead of overwriting. Not working.
+  // char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
+  // strncpy(tablefilename, table->name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
+  // strcat(tablefilename, ".tbl");
   
-  int fd = open(tablefilename, O_WRONLY | O_APPEND);
-  if(fd == -1){
-    printf("Error when attempting to open '%s' for writing, exiting: %s\n", tablefilename, strerror(errno));
-    exit(1);
-  }
-  ssize_t res = write(fd, row->values, sizeof(int) * table->colcount);
-  if (res == -1) {
-    printf("Error when writing to table: %s\n", strerror(errno));
-    exit(EXIT_FAILURE);
-  }
+  // int fd = open(tablefilename, O_WRONLY | O_APPEND);
+  // if(fd == -1){
+  //   printf("Error when attempting to open '%s' for writing, exiting: %s\n", tablefilename, strerror(errno));
+  //   exit(1);
+  // }
+  // ssize_t res = write(fd, row->values, sizeof(row->values));
+  // if (res == -1) {
+  //   printf("Error when writing to table: %s\n", strerror(errno));
+  //   exit(EXIT_FAILURE);
+  // }
   // free(tablefilename);
   // close(fd);
+  // struct table * tmp_table = read_table(table->name);
+  // print_table(tmp_table);
 
-  struct table * tmp_table = read_table(table->name);
-  print_table(tmp_table);
   printf("Row added successfully to table '%s'!\n", table->name);
 
   return 0;

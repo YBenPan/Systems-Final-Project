@@ -13,6 +13,26 @@ void chop_newline(char *s) {
     s[ln] = '\0';
 }
 
+int add_row_cmd(char *args) {
+  // Check syntax "(...)" and remove parentheses
+  if (args[0] != '(' || args[strlen(args) - 1] != ')') {
+    printf("Syntax Error: Row must be surrounded by parentheses!\n");
+    exit(EXIT_FAILURE);
+  }
+  strsep(&args, "(");
+  args[strlen(args) - 1] = '\0';
+  
+  // Form vector
+  struct intvector *row = init_intvector();
+  char *row_item; int row_num;
+  while ((row_item = strsep(&args, " "))) {
+    sscanf(row_item, "%d", &row_num);
+    add_intvector(row, row_num);
+  }
+
+  // TODO: need to check that row_size = table.row_size
+}
+
 void table_parser(struct table * table) {
   // Table variables for ease of access 
   char *table_name = table->name;
@@ -31,21 +51,7 @@ void table_parser(struct table * table) {
     print_table(table);
   }
   else if (!strcmp(cmd, "ADDROW")) {
-    // Check syntax "(...)" and remove parentheses
-    if (input_str[0] != '(' || input_str[strlen(input_str) - 1] != ')') {
-      printf("Syntax Error: Row must be surrounded by parentheses!\n");
-      exit(EXIT_FAILURE);
-    }
-    strsep(&input_str, "(");
-    input_str[strlen(input_str) - 1] = '\0';
-    
-    // Form vector
-    struct intvector *row = init_intvector();
-    char *row_item; int row_num;
-    while ((row_item = strsep(&input_str, " "))) {
-      sscanf(row_item, "%d", &row_num);
-      add_intvector(row, row_num);
-    }
+    add_row_cmd(input_str);
   }
   else if (!strcmp(cmd, "DELROW")) { // TODO: Implement DELROW
 

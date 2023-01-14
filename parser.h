@@ -8,6 +8,8 @@
 
 void chop_newline(char *s);
 
+int add_row_cmd(char *args);
+
 void table_parser(struct table * table);
 
 int select_table(char *args);

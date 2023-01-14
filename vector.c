@@ -49,7 +49,7 @@ void * delete_vector(struct vector *v, int index){
 struct intvector * init_intvector(){
   struct intvector *v = malloc(sizeof(struct intvector));
   v->size = 0;
-  v->capacity = 10;
+  v->capacity = 64;
   v->values = malloc(sizeof(int) * (v->capacity));
   return v;
 }

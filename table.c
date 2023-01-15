@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "table.h"
 #include "vector.h"
@@ -48,10 +49,32 @@ void add_row(struct table * table, struct tablerow * row){
 }
 
 // text is 2d array of the same size as schm->colcount, i-th entry corresponds to i-th entry of schema
-void add_row_from_text(struct table * table, struct schema * schm, char ** text){
+// returns 0 if success, 1 if failed
+char add_row_from_text(struct table * table, struct schema * schm, char ** text){
   struct tablerow * newrow = malloc(sizeof(struct tablerow));
-  tablerow->schm = schm;
-  tablerow->data = calloc(schm->rowbytesize[schm->colcount], sizeof(char));
+  newrow->schm = schm;
+  newrow->data = calloc(schm->rowbytesize[schm->colcount], sizeof(char));
+  char failed = 0;
+  for(int i = 0; i < schm->colcount; ++i){
+    char * copytopointer = newrow->data + schm->rowbytesize[i];
+    char * buff = parse_string_to_data(text[i], schm->datatypes->values[i]);
+    if(!buff){
+      printf("ERROR: add_row_from_text for column %d encountered unparsable text value %s", i, text[i]);
+      printf(", expected data type was: ");
+      print_datatype(schm->datatypes->values[i]);
+      printf(", parse_string_to_data returned errno %s\n", strerror(errno));
+      free(buff);
+      failed = 1;
+      free(newrow);
+      break;
+    }
+    memcpy(copytopointer, buff, get_datatype_size(schm->datatypes->values[i]));
+    free(buff);
+  }
+  if(!failed){
+    add_row(table, newrow);
+  }
+  return failed;
 }
 
 void print_table(struct table * table){
@@ -84,7 +107,10 @@ void print_table(struct table * table){
 void print_table_row(struct tablerow * tablerow){
   printf("[");
   for(int i = 0; i < tablerow->schm->colcount; ++i){
-    print_element_from_datatype(tablerow->data + tablerow->schm->rowbytesize[i], tablerow->schm->datatypes[i]);
+    if(i != 0){
+      printf(" ");
+    }
+    print_element_from_datatype(tablerow->data + tablerow->schm->rowbytesize[i], tablerow->schm->datatypes->values[i]);
   }
   printf("]");
 }

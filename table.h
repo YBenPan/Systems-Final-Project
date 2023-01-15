@@ -27,7 +27,8 @@ struct table * init_table(char * tablename, char **columnnames, int colcount, st
 void add_row(struct table * table, struct tablerow * row);
 
 // text is 2d array of the same size as schm->colcount, i-th entry corresponds to i-th entry of schema
-void add_row_from_text(struct table * table, struct schema * schm, char ** text);
+// returns 0 if success, 1 if failed
+char add_row_from_text(struct table * table, struct schema * schm, char ** text);
 
 void print_table(struct table * table);
 

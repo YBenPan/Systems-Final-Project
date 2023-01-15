@@ -5,7 +5,7 @@
 struct vector * init_vector(){
   struct vector *v = malloc(sizeof(struct vector));
   v->size = 0;
-  v->capacity = 10;
+  v->capacity = 64;
   v->values = malloc(sizeof(void *) * (v->capacity));
   return v;
 }

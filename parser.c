@@ -63,6 +63,51 @@ int add_row_cmd(struct table * table, char *args) {
   return 0;
 }
 
+int add_col_cmd(struct table * table, char *args) {
+  // Add column
+  table->colcount++;
+  if (table->colcount > MAXIMUM_CHAR_COUNT_TABLE_NAME) {
+    printf("Error: Column limit exceeded!\n");
+    exit(EXIT_FAILURE);
+  }
+  strcpy(table->columnnames[table->colcount - 1], args);
+
+  // Fill in new column
+  printf("Fill each element in the new column:\n");
+  for (int i = 0; i < table->rowcount; i++) {
+    // Resize row
+    struct intvector * currow = (table->data->values)[i]; 
+    resize_intvector(currow, table->colcount);
+
+    // Print row
+    printf("Row %d: ", i);
+    for (int j = 0; j < table->colcount - 1; j++) {
+      printf("%d ", currow->values[j]); 
+    }
+
+    // User input
+    char input[10];
+    fgets(input, 10, stdin);
+    chop_newline(input);
+    int new_val = 0;
+    sscanf(input, "%d", &new_val);
+
+    // Add to vector
+    add_intvector(currow, new_val);
+  }
+
+  // Write to table
+  if (write_table(table) == 0) {
+    printf("Column added successfully to table '%s'!\n", table->name);
+  }
+  else {
+    printf("Error when writing to table: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  return 0;
+}
+
 void table_parser(struct table * table) {
   // Table variables for ease of access 
   char *table_name = table->name;
@@ -75,13 +120,22 @@ void table_parser(struct table * table) {
 
   char *cmd = strsep(&input_str, " ");
 
-  // Router
+  // Router for commands not requiring an argument
   if (!strcmp(cmd, "PRINT")) {
     print_table(table);
+    return;
   }
-  else if (!strcmp(cmd, "ADDROW")) {
+  else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
+    return;
+  }
+  else if (!input_str) {
+    printf("Error: argument not supplied!\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  // Router for commands requiring an argument
+  if (!strcmp(cmd, "ADDROW")) {
     add_row_cmd(table, input_str);
-    // TODO: write changes in table to file
   }
   else if (!strcmp(cmd, "DELROW")) { // TODO: Implement DELROW
 
@@ -93,15 +147,12 @@ void table_parser(struct table * table) {
 
   }
   else if (!strcmp(cmd, "ADDCOL")) { // TODO: Implement ADDCOL
-
+    add_col_cmd(table, input_str);
   }
   else if (!strcmp(cmd, "DELCOL")) { // TODO: Implement DELCOL
 
   }
   else if (!strcmp(cmd, "QUERY")) { // TODO: Implement QUERY
-
-  }
-  else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
 
   }
   else {

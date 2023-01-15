@@ -9,7 +9,7 @@
 
 void print_datatype(struct datatype * dt){
   if(dt->type >= TOTAL_DATATYPE_COUNT){
-    printf("ERROR: get_datatype_size was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
+    printf("ERROR: print_datatype was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
     exit(1);
   }
   static char * datatype_labels[] = DATATYPE_LABELS;

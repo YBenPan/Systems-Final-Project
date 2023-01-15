@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 struct schema * init_schema(int colcount, struct vector * datatypes){
   struct schema * o = calloc(1, sizeof(struct schema));
@@ -49,16 +50,31 @@ void recompute_rowbytesize(struct schema * schm){
   struct vector * dts = schm->datatypes;
   int sum = 0;
   int * newrowbytesize = calloc(schm->colcount + 1, sizeof(int));
-  for(int i = 0; i < dts->colcount; ++i){
+  for(int i = 0; i < schm->colcount; ++i){
     newrowbytesize[i] = sum;
     struct datatype * dt = dts->values[i];
     sum += get_datatype_size(dt);
   }
-  newrowbytesize[dts->colcount] = sum;
+  newrowbytesize[schm->colcount] = sum;
   free(schm->rowbytesize);
   schm->rowbytesize = newrowbytesize;
   return;
 }
 
 void print_schema(struct schema * schm){
+  printf("SCHEMA: colcount: %d, rowbytesize: [", schm->colcount);
+  for(int i = 0; i <= schm->colcount; ++i){
+    if(i != 0){
+      printf(", ");
+    }
+    printf("%d", schm->rowbytesize[i]);
+  }
+  printf("], datatypes: [");
+  for(int i = 0; i < schm->colcount; ++i){
+    if(i != 0){
+      printf(", ");
+    }
+    print_datatype(schm->datatypes->values[i]);
+  }
+  printf("]\n");
 }

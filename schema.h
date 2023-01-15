@@ -19,7 +19,7 @@ struct schema * init_schema(int colcount, struct vector * datatypes);
 // colcount -> expected column count, text -> space separated string of datatypes, if error, returns NULL
 struct schema * init_schema_from_text(int colcount, char * text);
 
-void recompute_row_byte_size(struct schema * schm);
+void recompute_rowbytesize(struct schema * schm);
 
 void print_schema(struct schema * schm);
 

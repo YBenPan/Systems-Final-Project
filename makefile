@@ -2,8 +2,8 @@ OBJECTS= vector.o table.o
 CFLAGS= -Wall -Wextra
 LDFLAGS= -lm
 
-tabledebug: tabledebug.o table.o vector.o file_io.o
-	gcc $(CFLAGS) -o tabledebug tabledebug.o table.o vector.o file_io.o $(LDFLAGS)
+tabledebug: tabledebug.o table.o vector.o file_io.o schema.o datatypes.o
+	gcc $(CFLAGS) -o tabledebug tabledebug.o table.o vector.o file_io.o schema.o datatypes.o $(LDFLAGS)
 
 parserdebug: parserdebug.o parser.o table.o vector.o file_io.o
 	gcc $(CFLAGS) -o parserdebug parserdebug.o parser.o table.o vector.o file_io.o $(LDFLAGS)

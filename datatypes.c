@@ -94,7 +94,9 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
       char * endptr;
       errno = 0;
       long long int rv = strtoll(strinput, &endptr, 10);
-      if(errno != 0){
+      //printf("DEBUG: rv = %lld\n", rv);
+      if(errno == 0){
+        //printf("DEBUG3.1\n");
         if(*endptr == '\0'){
           long long int maxval;
           long long int minval;
@@ -147,6 +149,8 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
           o = NULL;
         }
       } else {
+        //printf("DEBUG3.2\n");
+        //printf("errno: %d\n", errno);
         // error, pass it down
         o = NULL;
       }
@@ -166,6 +170,7 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
           errno = EINVAL;
           o = NULL;
         }
+      } else {
         // error, pass it down
         o = NULL;
       }
@@ -185,6 +190,7 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
           errno = EINVAL;
           o = NULL;
         }
+      } else {
         // error, pass it down
         o = NULL;
       }
@@ -200,10 +206,15 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
       o = NULL;
     }
   } else if (dt->type == DATATYPE_TEXT){
-    int textmaxlen = dt->args;
-    o = calloc(textmaxlen, sizeof(char));
-    // last character must be null terminator
-    strncpy(o, strinput, textmaxlen - 1);
+    if(strlen(strinput) >= (dt->args >= 0 ? dt->args : 0)){
+      // bad since we will need to truncate, blame on user
+      o = NULL;
+    } else {
+      int textmaxlen = (dt->args >= 0 ? dt->args : 0);
+      o = calloc(textmaxlen, sizeof(char));
+      // last character must be null terminator
+      strncpy(o, strinput, textmaxlen - 1);
+    }
   }
   return o;
 }
@@ -236,7 +247,7 @@ void print_element_from_datatype(char * buff, struct datatype * dt){
       printf("%c", *buff);
       break;
     case DATATYPE_TEXT:
-      printf("%-*s", dt->args, buff);
+      printf("%-*s", dt->args - 1, buff);
       break;
   }
 }

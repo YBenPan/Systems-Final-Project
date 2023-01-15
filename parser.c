@@ -256,21 +256,18 @@ int drop_table(char *args) {
   }
 }
 
-void usr_input(char *input) {
-  printf("Input global command to start:\n");
-  fgets(input, MAX_CMD_LENGTH, stdin);
-  chop_newline(input);
-}
-
-void global_parser(char *input) {
+int global_parser(char *input) {
   // Create a copy of input string
   char *input_str = malloc(sizeof(input));
   strcpy(input_str, input);
 
   // Get the command
   char *cmd = strsep(&input_str, " ");
-  // printf("%s\n", cmd);
-  // printf("%s\n", input_str);
+
+  if (!strcmp(cmd, "EXIT")) {
+    free(cmd);
+    return -1;
+  }
 
   if (!strcmp(cmd, "SELECT")) {
     select_table(input_str);
@@ -286,4 +283,6 @@ void global_parser(char *input) {
     // TODO: Ask user to try again instead
     exit(EXIT_FAILURE);
   }
+
+  return 0;
 }

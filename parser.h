@@ -18,8 +18,6 @@ int create_table(char *args);
 
 int drop_table(char *args);
 
-void usr_input(char *input);
-
-void global_parser(char *input);
+int global_parser(char *input);
 
 #endif

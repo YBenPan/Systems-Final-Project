@@ -1,8 +1,10 @@
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "parser.h"
@@ -66,7 +68,7 @@ int add_row_cmd(struct table * table, char *args) {
 int add_col_cmd(struct table * table, char *args) {
   // Add column
   table->colcount++;
-  if (table->colcount > MAXIMUM_CHAR_COUNT_TABLE_NAME) {
+  if (table->colcount > MAXIMUM_COL_COUNT) {
     printf("Error: Column limit exceeded!\n");
     exit(EXIT_FAILURE);
   }
@@ -165,8 +167,8 @@ void table_parser(struct table * table) {
 int select_table(char *args) {
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
-  char *file_dir = "./";
-  char *file = malloc(sizeof(table_name) + 1);
+  char *file_dir = "./db/";
+  char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
   strcpy(file, file_dir);
   file[strlen(file)] = '\0';
   file = strcat(file, table_name);
@@ -181,16 +183,22 @@ int select_table(char *args) {
 }
 
 int create_table(char *args) {
+  // Create database directory if not exist
+  char *file_dir = "./db/";
+  struct stat st = {0};
+  if (stat(file_dir, &st) == -1) {
+    mkdir(file_dir, 0700);
+  }
+
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
-  char *file_dir = "./";
-  char *file = malloc(sizeof(table_name) + 1);
+  char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
   strcpy(file, file_dir);
   file = strcat(file, table_name);
   // printf("%s\n", file);
 
   // 2D array for column names. See tabledebug.c
-  char *col_names[MAXIMUM_CHAR_COUNT_TABLE_NAME];
+  char *col_names[MAXIMUM_COL_COUNT];
   // table->column_names -> char (*col_names)[64] -> pointer (dynamic array) to 64-sized fixed-length char arrays
   char *col_input = malloc(MAX_CMD_LENGTH);
   printf("Input column names, separated by space:\n");
@@ -230,11 +238,11 @@ int create_table(char *args) {
 int drop_table(char *args) {
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
-  char *file_dir = "./";
-  char *file = malloc(sizeof(table_name) + 1);
+  char *file_dir = "./db/";
+  char *file_ext = ".tbl";
+  char *file = malloc(sizeof(table_name) + sizeof(file_dir) + sizeof(file_ext) + 1);
   strcpy(file, file_dir);
   strcat(file, table_name);
-  char *file_ext = ".tbl";
   strcat(file, file_ext);
   // printf("%s\n", file);
 

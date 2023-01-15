@@ -11,14 +11,17 @@
 
 // returns 0 if success
 char write_table(struct table * table){
-  char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
-  strncpy(tablefilename, table->name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
+  // Put together table path
+  char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+16, sizeof(char));
+  strcpy(tablefilename, "./db/");
+  strncat(tablefilename, table->name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
   strcat(tablefilename, ".tbl");
   int fd = open(tablefilename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
   if(fd == -1){
     printf("Error when attempting to open the table file for writing, exiting: %s\n", strerror(errno));
     exit(1);
   }
+  
   int file_version = CURRENT_TABLE_FILE_VERSION;
   // HEADER
   write(fd, "TBLF", 4);
@@ -41,7 +44,9 @@ char write_table(struct table * table){
 }
 
 struct table * read_table(char * table_name){
+  // Put together table path
   char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
+  strcpy(tablefilename, "./db/");
   strncpy(tablefilename, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
   strcat(tablefilename, ".tbl");
   int fd = open(tablefilename, O_RDONLY);
@@ -49,6 +54,7 @@ struct table * read_table(char * table_name){
     printf("Error when attempting to open the table file for reading, exiting: %s\n", strerror(errno));
     exit(1);
   }
+
   char nonce[5];
   read(fd, nonce, 4);
   nonce[4] = '\0';

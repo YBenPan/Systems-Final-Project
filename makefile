@@ -11,6 +11,9 @@ parserdebug: parserdebug.o parser.o table.o vector.o file_io.o
 tabledebug.o: tabledebug.c table.h vector.h file_io.h
 	gcc -c $(CFLAGS) tabledebug.c
 
+datatypes.o: datatypes.c datatypes.h
+	gcc -c $(CFLAGS) datatypes.c
+
 file_io.o: file_io.c file_io.h table.h vector.h
 	gcc -c $(CFLAGS) file_io.c
 

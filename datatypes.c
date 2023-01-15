@@ -20,6 +20,46 @@ int get_datatype_size(struct datatype * dt){
   return rv;
 }
 
+// returns NULL on error
+struct datatype * parse_string_to_datatype(char * strinput){
+  static char * datatype_labels[] = DATATYPE_LABELS;
+  for(int i = 0; i < TOTAL_DATATYPE_COUNT; ++i){
+    if(strncasecmp(strinput, datatype_labels[i], strlen(datatype_labels[i])) == 0){
+      // check for arguments (in the form of eg. TEXT(64))
+      char * rel = strinput + strlen(datatype_labels[i]);
+      if(*rel == '\0'){
+        // perfect match, no args
+        struct datatype * rv = malloc(sizeof(struct datatype));
+        rv->type = i;
+        rv->args = 0;
+        return rv;
+      } else if (*rel == '('){
+        // first make sure last character is a )
+        char *rel2 = strinput + strlen(strinput) - 1;
+        if(*rel2 != ')'){
+          // improperly formatted
+          continue;
+        }
+        // check for argument if any
+        rel++;
+        if(*rel < '\0' || *rel > '9'){
+          // not a number arg, fake match, continue loop
+          continue;
+        }
+        int argval = atoi(rel);
+        struct datatype * rv = malloc(sizeof(struct datatype));
+        rv->type = i;
+        rv->args = argval;
+        return rv;
+      } else {
+        // fake match, continue loop
+        continue;
+      }
+    }
+  }
+  return NULL;
+}
+
 // returns a char * pointer to a memory block of size get_datatype_size, returns NULL (graciously fails) if parsing fails
 char * parse_string_to_data(char * strinput, struct datatype * dt){
   if(dt->type >= TOTAL_DATATYPE_COUNT){
@@ -32,13 +72,13 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
   // if string has non-string components, ERROR, errno set to EINVAL
   // hex numbers and octals NOT SUPPORTED, only decimals
   // all values are SIGNED
-  if(dt->type == DATATYPE_INT || dt->type == DATATYPE_SHORTINT || dt->type == DATATYPE_TINYINT || dt->type == DATATYPE_LONG){
-    if(strinput != '\0'){
+  if(dt->type == DATATYPE_INT || dt->type == DATATYPE_SMALLINT || dt->type == DATATYPE_TINYINT || dt->type == DATATYPE_LONG){
+    if(*strinput != '\0'){
       char * endptr;
       errno = 0;
       long long int rv = strtoll(strinput, &endptr, 10);
       if(errno != 0){
-        if(**endptr == '\0'){
+        if(*endptr == '\0'){
           long long int maxval;
           long long int minval;
           switch(dt->type){
@@ -46,7 +86,7 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
               maxval = INT_MAX;
               minval = INT_MIN;
               break;
-            case DATATYPE_SHORTINT:
+            case DATATYPE_SMALLINT:
               maxval = SHRT_MAX;
               minval = SHRT_MIN;
               break;
@@ -66,27 +106,22 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
           } else {
             // actually good value
             // to avoid endianness issues, use typecasting here instead:
-            switch(dt->type){
-              case DATATYPE_INT:
-                int * p = calloc(1, sizeof(int));
-                *p = (int)(rv);
-                o = (char *)(p);
-                break;
-              case DATATYPE_SHORTINT:
-                short * p = calloc(1, sizeof(short));
-                *p = (short)(rv);
-                o = (char *)(p);
-                break;
-              case DATATYPE_TINYINT:
-                signed char * p = calloc(1, sizeof(signed char));
-                *p = (signed char)(rv);
-                o = (char *)(p);
-                break;
-              case DATATYPE_LONG:
-                long long * p = calloc(1, sizeof(long long));
-                *p = rv;
-                o = (char *)(p);
-                break;
+            if(dt->type == DATATYPE_INT){
+              int * p = calloc(1, sizeof(int));
+              *p = (int)(rv);
+              o = (char *)(p);
+            } else if (dt->type == DATATYPE_SMALLINT){
+              short * p = calloc(1, sizeof(short));
+              *p = (short)(rv);
+              o = (char *)(p);
+            } else if (dt->type == DATATYPE_TINYINT){
+              signed char * p = calloc(1, sizeof(signed char));
+              *p = (signed char)(rv);
+              o = (char *)(p);
+            } else if (dt->type == DATATYPE_LONG){
+              long long * p = calloc(1, sizeof(long long));
+              *p = rv;
+              o = (char *)(p);
             }
           }
         } else {

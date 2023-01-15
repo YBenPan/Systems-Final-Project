@@ -26,6 +26,8 @@ struct datatype{
 
 int get_datatype_size(struct datatype * dt);
 
+struct datatype * parse_string_to_datatype(char * strinput);
+
 char * parse_string_to_data(char * strinput, struct datatype * dt);
 
 #endif

@@ -24,3 +24,4 @@ January 13:
 
 January 14: 
 - 12:36AM: Finished select_table functionality - Ben
+- 6:04PM: Finished add_row_cmd functionality - Ben

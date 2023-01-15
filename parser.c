@@ -110,34 +110,50 @@ int add_col_cmd(struct table * table, char *args) {
   return 0;
 }
 
-void table_parser(struct table * table) {
-  // Table variables for ease of access 
-  char *table_name = table->name;
+void table_main(struct table * table) {
+  char *input = malloc(MAX_CMD_LENGTH);
+  printf("Opened table '%s'. Entering table-specific shell...\n\n", table->name);
+  
+  while (1) {
+    // Prompt for user input
+    printf("Input table command:\n");
+    fgets(input, MAX_CMD_LENGTH, stdin);
+    chop_newline(input);
 
-  // Prompt for user input
-  char *input_str = malloc(MAX_CMD_LENGTH);
-  printf("Opened table '%s'. Input table command:\n", table_name);
-  fgets(input_str, MAX_CMD_LENGTH, stdin);
-  chop_newline(input_str);
+    int r = table_parser(table, input);
+    if (r == -1) {
+      printf("Table connection exiting. Back to global shell...\n\n");
+      break;
+    }
+  }
+}
 
-  char *cmd = strsep(&input_str, " ");
+int table_parser(struct table * table, char *input) {
+
+  // Get the command
+  char *cmd = strsep(&input, " ");
 
   // Router for commands not requiring an argument
-  if (!strcmp(cmd, "PRINT")) {
+  if (!strcmp(cmd, "EXIT")) {
+    free(cmd);
+    return -1;
+  }
+  else if (!strcmp(cmd, "PRINT")) {
     print_table(table);
-    return;
+    printf("\n");
+    return 0;
   }
   else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
-    return;
+    return 0;
   }
-  else if (!input_str) {
+  else if (!input) {
     printf("Error: argument not supplied!\n\n");
     exit(EXIT_FAILURE);
   }
   
   // Router for commands requiring an argument
   if (!strcmp(cmd, "ADDROW")) {
-    add_row_cmd(table, input_str);
+    add_row_cmd(table, input);
   }
   else if (!strcmp(cmd, "DELROW")) { // TODO: Implement DELROW
 
@@ -149,7 +165,7 @@ void table_parser(struct table * table) {
 
   }
   else if (!strcmp(cmd, "ADDCOL")) { // TODO: Implement ADDCOL
-    add_col_cmd(table, input_str);
+    add_col_cmd(table, input);
   }
   else if (!strcmp(cmd, "DELCOL")) { // TODO: Implement DELCOL
 
@@ -175,7 +191,7 @@ int select_table(char *args) {
 
   // Open table
   struct table * table = read_table(table_name);
-  table_parser(table);
+  table_main(table);
   
   // TODO: response after table_parser
   return 0;
@@ -256,12 +272,9 @@ int drop_table(char *args) {
 }
 
 int global_parser(char *input) {
-  // Create a copy of input string
-  char *input_str = malloc(sizeof(input));
-  strcpy(input_str, input);
 
   // Get the command
-  char *cmd = strsep(&input_str, " ");
+  char *cmd = strsep(&input, " ");
 
   if (!strcmp(cmd, "EXIT")) {
     free(cmd);
@@ -269,13 +282,13 @@ int global_parser(char *input) {
   }
 
   if (!strcmp(cmd, "SELECT")) {
-    select_table(input_str);
+    select_table(input);
   }
   else if (!strcmp(cmd, "CREATE")) {
-    create_table(input_str);
+    create_table(input);
   }
   else if (!strcmp(cmd, "DROP")) {
-    drop_table(input_str);
+    drop_table(input);
   }
   else {
     printf("Invalid command '%s'!\n\n", cmd);

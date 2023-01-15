@@ -5,7 +5,7 @@
 #include "parser.h"
 
 int main() {
-  char input[MAX_CMD_LENGTH];
+  char *input = malloc(MAX_CMD_LENGTH);
   while (1) {
     // Prompt user for input 
     printf("Input global command:\n");

@@ -24,6 +24,8 @@ struct datatype{
 
 #define DATATYPE_REQ_ARGUMENTS {0, 0, 0, 0, 0, 0, 0, 1}
 
+void print_datatype(struct datatype * dt);
+
 int get_datatype_size(struct datatype * dt);
 
 struct datatype * parse_string_to_datatype(char * strinput);

@@ -37,6 +37,7 @@
 *.hex
 tabledebug
 parserdebug
+datatypedebug
 
 # Debug files
 *.dSYM/

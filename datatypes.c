@@ -7,6 +7,18 @@
 #include <errno.h>
 #include <limits.h>
 
+void print_datatype(struct datatype * dt){
+  if(dt->type >= TOTAL_DATATYPE_COUNT){
+    printf("ERROR: get_datatype_size was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
+    exit(1);
+  }
+  static char * datatype_labels[] = DATATYPE_LABELS;
+  if(dt == NULL){
+    printf("NULL");
+  }
+  printf("(%s, %d)", datatype_labels[dt->type], dt->args);
+}
+
 int get_datatype_size(struct datatype * dt){
   static int datatype_sizes[] = DATATYPE_SIZES;
   if(dt->type >= TOTAL_DATATYPE_COUNT){
@@ -23,12 +35,17 @@ int get_datatype_size(struct datatype * dt){
 // returns NULL on error
 struct datatype * parse_string_to_datatype(char * strinput){
   static char * datatype_labels[] = DATATYPE_LABELS;
+  static int datatype_requires_arguments[] = DATATYPE_REQ_ARGUMENTS;
   for(int i = 0; i < TOTAL_DATATYPE_COUNT; ++i){
     if(strncasecmp(strinput, datatype_labels[i], strlen(datatype_labels[i])) == 0){
       // check for arguments (in the form of eg. TEXT(64))
       char * rel = strinput + strlen(datatype_labels[i]);
       if(*rel == '\0'){
         // perfect match, no args
+        if(datatype_requires_arguments[i]){
+          // no arguments but datatype needs one
+          continue;
+        }
         struct datatype * rv = malloc(sizeof(struct datatype));
         rv->type = i;
         rv->args = 0;

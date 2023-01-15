@@ -8,6 +8,12 @@ tabledebug: tabledebug.o table.o vector.o file_io.o
 parserdebug: parserdebug.o parser.o table.o vector.o file_io.o
 	gcc $(CFLAGS) -o parserdebug parserdebug.o parser.o table.o vector.o file_io.o $(LDFLAGS)
 
+datatypedebug: datatypedebug.o datatypes.o
+	gcc $(CFLAGS) -o datatypedebug datatypedebug.o datatypes.o
+
+datatypedebug.o: datatypedebug.c datatypes.h
+	gcc -c $(CFLAGS) datatypedebug.c
+
 tabledebug.o: tabledebug.c table.h vector.h file_io.h
 	gcc -c $(CFLAGS) tabledebug.c
 

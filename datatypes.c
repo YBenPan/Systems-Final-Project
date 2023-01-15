@@ -152,9 +152,91 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
       }
     }
   } else if (dt->type == DATATYPE_FLOAT){
+    if(*strinput != '\0'){
+      char * endptr;
+      errno = 0;
+      float f = strtof(strinput, &endptr);
+      if(errno == 0){
+        if(*endptr == '\0'){
+          float * p = calloc(1, sizeof(float));
+          *p = f;
+          o = (char *)(p);
+        } else {
+          // some characters not parsed, invalid char somewhere
+          errno = EINVAL;
+          o = NULL;
+        }
+        // error, pass it down
+        o = NULL;
+      }
+    }
   } else if (dt->type == DATATYPE_DOUBLE){
+    if(*strinput != '\0'){
+      char * endptr;
+      errno = 0;
+      double d = strtod(strinput, &endptr);
+      if(errno == 0){
+        if(*endptr == '\0'){
+          double * p = calloc(1, sizeof(double));
+          *p = d;
+          o = (char *)(p);
+        } else {
+          // some characters not parsed, invalid char somewhere
+          errno = EINVAL;
+          o = NULL;
+        }
+        // error, pass it down
+        o = NULL;
+      }
+    }
   } else if (dt->type == DATATYPE_CHAR){
+    // if strlen is 0, interpret as null char, otherwise strlen must be 1
+    if(strlen(strinput) == 0){
+      o = calloc(1, sizeof(char));
+    } else if (strlen(strinput) == 1){
+      o = calloc(1, sizeof(char));
+      *o = strinput[0];
+    } else {
+      o = NULL;
+    }
   } else if (dt->type == DATATYPE_TEXT){
+    int textmaxlen = dt->args;
+    o = calloc(textmaxlen, sizeof(char));
+    // last character must be null terminator
+    strncpy(o, strinput, textmaxlen - 1);
   }
   return o;
+}
+
+void print_element_from_datatype(char * buff, struct datatype * dt){
+  if(dt->type >= TOTAL_DATATYPE_COUNT){
+    printf("ERROR: print_element_from_datatype was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
+    exit(1);
+  }
+  switch(dt->type){
+    case DATATYPE_INT:
+      printf("%d", *((int *)buff));
+      break;
+    case DATATYPE_SMALLINT:
+      printf("%hd", *((short *)buff));
+      break;
+    case DATATYPE_TINYINT:
+      printf("%hhd", *((signed char *)buff));
+      break;
+    case DATATYPE_LONG:
+      printf("%lld", *((long long *)buff));
+      break;
+    case DATATYPE_FLOAT:
+      printf("%f", *((float *)buff));
+      break;
+    case DATATYPE_DOUBLE:
+      printf("%lf", *((double *)buff));
+      break;
+    case DATATYPE_CHAR:
+      printf("%c", *buff);
+      break;
+    case DATATYPE_TEXT:
+      printf("%-*s", dt->args, buff);
+      break;
+  }
 }

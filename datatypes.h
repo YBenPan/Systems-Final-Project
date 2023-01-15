@@ -15,6 +15,7 @@ struct datatype{
 #define DATATYPE_FLOAT 4
 #define DATATYPE_DOUBLE 5
 #define DATATYPE_CHAR 6
+// SPECIAL NOTE FOR TEXT: ARGUMENT SPECIFIES SIZE, LAST BYTE RESERVED FOR NULL TERMINATOR
 #define DATATYPE_TEXT 7
 
 // if size is 0, treats args as sizes
@@ -31,5 +32,7 @@ int get_datatype_size(struct datatype * dt);
 struct datatype * parse_string_to_datatype(char * strinput);
 
 char * parse_string_to_data(char * strinput, struct datatype * dt);
+
+void print_element_from_datatype(char * buff, struct datatype * dt);
 
 #endif

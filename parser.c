@@ -1,13 +1,25 @@
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "parser.h"
+
+// union semun {
+//    int              val;    /* Value for SETVAL */
+//    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+//    unsigned short  *array;  /* Array for GETALL, SETALL */
+//    struct seminfo  *__buf;  /* Buffer for IPC_INFO */
+//                             /* (Linux-specific) */
+//  };
 
 void chop_newline(char *s) {
   size_t ln = strlen(s) - 1;
@@ -119,6 +131,8 @@ void table_main(struct table * table) {
     printf("Input table command:\n");
     fgets(input, MAX_CMD_LENGTH, stdin);
     chop_newline(input);
+
+    // TODO: semaphore goes here
 
     int r = table_parser(table, input);
     if (r == -1) {
@@ -242,12 +256,46 @@ int create_table(char *args) {
   if (!write_table(table)) {
     free(table);
     printf("Table '%s' created successfully!\n\n", table_name);
-    return 0;
   }
   else {
     printf("Creation of table '%s' failed: %s\n\n", table_name, strerror(errno));
     exit(EXIT_FAILURE);
   }
+
+  srand(time(NULL));
+
+  // TODO: keep generating key until it's unique
+  int key = rand() % 100000;
+
+  // Create semaphore
+  int semd = semget(key, 1, IPC_CREAT | IPC_EXCL | 0644);
+  int v;
+  if (semd == -1) {
+      printf("Error: %s\n", strerror(errno));
+      exit(EXIT_FAILURE);
+  }
+
+  // Set semaphore value
+  union semun us;
+  us.val = _POSIX_SEM_VALUE_MAX;
+  v = semctl(semd, 0, SETVAL, us);
+  if (v == -1) {
+    printf("Error: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  else printf("Created semaphore with key '%d' successfully!\n", key);
+
+  // Open semaphore file
+  int fd = open("./sem", O_APPEND | O_WRONLY | O_CREAT, 0700);
+  if (fd == -1) {
+    printf("Error: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  close(fd);
+
+  // TODO: Write table_name and semaphore to file
+  
+  return 0;
 }
 
 int drop_table(char *args) {

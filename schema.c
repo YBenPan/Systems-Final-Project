@@ -22,14 +22,19 @@ struct schema * init_schema(int colcount, struct vector * datatypes){
 
 // colcount -> expected column count, text -> space separated string of datatypes, if error, returns NULL
 struct schema * init_schema_from_text(int colcount, char * text){
+  char *tc = calloc(strlen(text) + 1, sizeof(char));
+  char *tcog = tc;
+  strcpy(tc, text);
   struct vector * datatypes = init_vector();
-  char * tok = text;
-  while((tok = strsep(&text, " "))){
+  char * tok = tc;
+  while((tok = strsep(&tc, " "))){
+    printf("DEBUG TOK = %s\n", tok);
     struct datatype * dt = parse_string_to_datatype(tok);
     if(!dt){
       printf("ERROR: In init_schema_from_text, parse_string_to_datatype failed to parse datatype string %s\n", tok);
       free(datatypes->values);
       free(datatypes);
+      free(tcog);
       return NULL;
     }
     add_vector(datatypes, dt);
@@ -39,10 +44,12 @@ struct schema * init_schema_from_text(int colcount, char * text){
     for(int i = 0; i < datatypes->size; ++i){
       free(datatypes->values[i]);
     }
+    free(tcog);
     free(datatypes->values);
     free(datatypes);
     return NULL;
   }
+  free(tcog);
   return init_schema(colcount, datatypes);
 }
 

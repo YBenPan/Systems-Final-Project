@@ -1,0 +1,2 @@
+- Need a database schema to track column datatype
+  - When adding rows, check that datatype fits in each column

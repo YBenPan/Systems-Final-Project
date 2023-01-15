@@ -18,7 +18,7 @@ void chop_newline(char *s) {
 int add_row_cmd(struct table * table, char *args) {  
   // Check syntax "(...)" and remove parentheses
   if (args[0] != '(' || args[strlen(args) - 1] != ')') {
-    printf("Syntax Error: Row must be surrounded by parentheses!\n");
+    printf("Syntax Error: Row must be surrounded by parentheses!\n\n");
     exit(EXIT_FAILURE);
   }
   strsep(&args, "(");
@@ -60,7 +60,7 @@ int add_row_cmd(struct table * table, char *args) {
   // struct table * tmp_table = read_table(table->name);
   // print_table(tmp_table);
 
-  printf("Row added successfully to table '%s'!\n", table->name);
+  printf("Row added successfully to table '%s'!\n\n", table->name);
 
   return 0;
 }
@@ -69,7 +69,7 @@ int add_col_cmd(struct table * table, char *args) {
   // Add column
   table->colcount++;
   if (table->colcount > MAXIMUM_COL_COUNT) {
-    printf("Error: Column limit exceeded!\n");
+    printf("Error: Column limit exceeded!\n\n");
     exit(EXIT_FAILURE);
   }
   strcpy(table->columnnames[table->colcount - 1], args);
@@ -100,10 +100,10 @@ int add_col_cmd(struct table * table, char *args) {
 
   // Write to table
   if (write_table(table) == 0) {
-    printf("Column added successfully to table '%s'!\n", table->name);
+    printf("Column added successfully to table '%s'!\n\n", table->name);
   }
   else {
-    printf("Error when writing to table: %s\n", strerror(errno));
+    printf("Error when writing to table: %s\n\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
 
@@ -131,7 +131,7 @@ void table_parser(struct table * table) {
     return;
   }
   else if (!input_str) {
-    printf("Error: argument not supplied!\n");
+    printf("Error: argument not supplied!\n\n");
     exit(EXIT_FAILURE);
   }
   
@@ -159,7 +159,7 @@ void table_parser(struct table * table) {
   }
   else {
     // TODO: Ask user to try again instead, within SELECT
-    printf("Invalid command '%s'!\n", cmd);
+    printf("Invalid command '%s'!\n\n", cmd);
     exit(EXIT_FAILURE);
   }
 }
@@ -167,11 +167,10 @@ void table_parser(struct table * table) {
 int select_table(char *args) {
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
-  char *file_dir = "./db/";
-  char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
-  strcpy(file, file_dir);
-  file[strlen(file)] = '\0';
-  file = strcat(file, table_name);
+  char *file = malloc(sizeof(table_name) + 16);
+  strcpy(file, "./db/");
+  strncat(file, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
+  strcat(file, ".tbl");
   // printf("%s\n", file);
 
   // Open table
@@ -192,9 +191,9 @@ int create_table(char *args) {
 
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
-  char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
-  strcpy(file, file_dir);
-  file = strcat(file, table_name);
+  // char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
+  // strcpy(file, file_dir);
+  // file = strcat(file, table_name);
   // printf("%s\n", file);
 
   // 2D array for column names. See tabledebug.c
@@ -226,11 +225,11 @@ int create_table(char *args) {
   // Write table
   if (!write_table(table)) {
     free(table);
-    printf("Table '%s' created successfully!\n", table_name);
+    printf("Table '%s' created successfully!\n\n", table_name);
     return 0;
   }
   else {
-    printf("Creation of table '%s' failed: %s\n", table_name, strerror(errno));
+    printf("Creation of table '%s' failed: %s\n\n", table_name, strerror(errno));
     exit(EXIT_FAILURE);
   }
 }
@@ -247,11 +246,11 @@ int drop_table(char *args) {
   // printf("%s\n", file);
 
   if (remove(file) == -1) {
-    printf("Dropping table '%s' failed: %s\n", table_name, strerror(errno));
+    printf("Dropping table '%s' failed: %s\n\n", table_name, strerror(errno));
     exit(EXIT_FAILURE);
   }
   else {
-    printf("Table '%s' dropped successfully!\n", table_name);
+    printf("Table '%s' dropped successfully!\n\n", table_name);
     return 0;
   }
 }
@@ -279,7 +278,7 @@ int global_parser(char *input) {
     drop_table(input_str);
   }
   else {
-    printf("Invalid command '%s'!\n", cmd);
+    printf("Invalid command '%s'!\n\n", cmd);
     // TODO: Ask user to try again instead
     exit(EXIT_FAILURE);
   }

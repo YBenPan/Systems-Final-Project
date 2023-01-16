@@ -255,7 +255,6 @@ int create_table(char *args) {
   // Write table
   if (!write_table(table)) {
     free(table);
-    printf("Table '%s' created successfully!\n\n", table_name);
   }
   else {
     printf("Creation of table '%s' failed: %s\n\n", table_name, strerror(errno));
@@ -286,14 +285,59 @@ int create_table(char *args) {
   else printf("Created semaphore with key '%d' successfully!\n", key);
 
   // Open semaphore file
-  int fd = open("./sem", O_APPEND | O_WRONLY | O_CREAT, 0700);
+  int fd = open("./sem", O_RDONLY | O_CREAT, 0700);
   if (fd == -1) {
-    printf("Error: %s\n", strerror(errno));
+    printf("Error when opening semaphore file: %s\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
+  
+  // Check if file is blank
+  struct stat stat_record;
+  if (fstat(fd, &stat_record) == -1) {
+    printf("Error when checking semaphore file: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  // Initialize vectors 
+  struct vector * table_names = init_vector();
+  struct vector * semaphore_keys = init_vector();
+  int table_names_size = 0, semaphore_keys_size = 0;
+
+  if (stat_record.st_size > 1) { // Nonempty file
+    read(fd, &table_names_size, sizeof(int));
+    read(fd, &semaphore_keys_size, sizeof(int));
+    printf("%d, %d\n", table_names_size, semaphore_keys_size);
+    if (table_names_size != 0 && semaphore_keys_size != 0) {
+      // Read vectors from file
+      read(fd, &table_names, table_names_size);
+      read(fd, &semaphore_keys, semaphore_keys_size);
+    }
+  }
+    
+  // Add new table's name and semaphore key to the vectors
+  add_vector(table_names, table_name);
+  add_vector(semaphore_keys, &key);
+  printf("%d\n", table_names->size);
+  // for (int i = 0; i < table_names->size; i++) {
+  //   printf("%s\n", table_names->values[i]);
+  // }
+
+  fd = open("./sem", O_WRONLY | O_TRUNC, 0700);
+
+  // First two integers identify the sizes of vectors
+  table_names_size = sizeof(table_names);
+  semaphore_keys_size = sizeof(semaphore_keys);
+  write(fd, &table_names_size, sizeof(int));
+  write(fd, &semaphore_keys_size, sizeof(int));
+
+  // Write the vectors to file
+  write(fd, &table_names, table_names_size);
+  write(fd, &semaphore_keys, semaphore_keys_size);
+  printf("Semaphore keys file updated!\n");
+
   close(fd);
 
-  // TODO: Write table_name and semaphore to file
+  printf("Table '%s' created successfully!\n\n", table_name);
   
   return 0;
 }

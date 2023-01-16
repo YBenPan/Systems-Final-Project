@@ -35,6 +35,14 @@ void * remove_vector(struct vector *v){
   return v->values[v->size];
 }
 
+void free_vector(struct vector *v){
+  for(int i = 0; i < v->size; ++i){
+    free(v->values[i]);
+  }
+  free(v->values);
+  free(v);
+}
+
 void * delete_vector(struct vector *v, int index){
   void * copy = v->values[index];
   if(index >= 0 && index < v->size){

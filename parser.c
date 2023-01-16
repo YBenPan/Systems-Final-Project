@@ -8,6 +8,9 @@
 #include <unistd.h>
 
 #include "parser.h"
+#include "table.h"
+#include "vector.h"
+#include "file_io.h"
 
 void chop_newline(char *s) {
   size_t ln = strlen(s) - 1;
@@ -25,17 +28,34 @@ int add_row_cmd(struct table * table, char *args) {
   args[strlen(args) - 1] = '\0';
   
   // Form vector
-  struct intvector *row = init_intvector();
-  char *row_item; int row_num; 
+  struct vector *row = init_vector();
+  char *row_item; 
 
   // Deconstruct user input into row elements
   while ((row_item = strsep(&args, " "))) {
-    sscanf(row_item, "%d", &row_num);
-    add_intvector(row, row_num); 
+    //sscanf(row_item, "%d", &row_num);
+    char *newbuff = calloc(strlen(row_item) + 1, sizeof(char));
+    strncpy(newbuff, row_item, strlen(row_item) + 1);
+    add_vector(row, newbuff); 
+  }
+
+  if(row->size != table->colcount){
+    printf("Syntax Error: Row must have colcount = %d elements, found %d elements instead, exiting!\n\n", table->colcount, row->size);
+    exit(EXIT_FAILURE);
+    free_vector(row);
   }
 
   // Add row using function in table.c
-  add_row(table, row);
+  char retval = add_row_from_text(table, table->schm, (char **)row->values);
+  free_vector(row);
+
+  if(retval){
+    printf("Encountered error in add_row_from_text when trying to add_row, exiting!\n\n");
+    exit(EXIT_FAILURE);
+  }
+
+  // Add row using function in table.c
+  //add_row(table, row);
 
   // Write to table
   write_table(table);
@@ -178,6 +198,7 @@ int table_parser(struct table * table, char *input) {
     printf("Invalid command '%s'!\n\n", cmd);
     exit(EXIT_FAILURE);
   }
+  return 0;
 }
 
 int select_table(char *args) {
@@ -207,6 +228,10 @@ int create_table(char *args) {
 
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
+  if(!table_name){
+    printf("ERROR: Invalid table name! Exiting!\n");
+    exit(EXIT_FAILURE);
+  }
   // char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
   // strcpy(file, file_dir);
   // file = strcat(file, table_name);
@@ -229,15 +254,33 @@ int create_table(char *args) {
     }
     col_names[col_cnt] = malloc((strlen(col_name) + 1) * sizeof(*col_names[col_cnt]));
     strcpy(col_names[col_cnt++], col_name);
-    // printf("%s\n", col_name);
+    printf("%s\n", col_name);
   }
 
+  printf("Input schema (data types) for each column, separated by spaces. You must have as many data types as you have columns. Allowed data types include INT, SMALLINT, TINYINT, LONG, FLOAT, DOUBLE, CHAR, and TEXT(n), where n is an integer.\n");
+  col_input = malloc(MAX_CMD_LENGTH);
+  fgets(col_input, MAX_CMD_LENGTH, stdin);
+  //printf("DEBUG2\n");
+  chop_newline(col_input);
+  //printf("DEBUG\n");
+  struct schema * schema = init_schema_from_text(col_cnt, col_input);
+  //printf("DEBUG3\n");
+  if(!schema){
+    printf("ERROR: When trying to create table, init_schema_from_text was unable to parse your schema string correctly. Program exiting!\n");
+    free(col_input);
+    for(int i = 0; i < col_cnt; ++i){
+      free(col_names[i]);
+    }
+    exit(EXIT_FAILURE);
+  }
+  //printf("DEBUG4\n");
   // Initialize table and free col_names
-  struct table * table = init_table(table_name, col_names, col_cnt);
+  struct table * table = init_table(table_name, col_names, col_cnt, schema);
+  //printf("DEBUG4.1\n");
   for(int i = 0; i < col_cnt; ++i){
     free(col_names[i]);
   }
-
+  //printf("DEBUG5\n");
   // Write table
   if (!write_table(table)) {
     free(table);

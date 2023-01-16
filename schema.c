@@ -28,7 +28,7 @@ struct schema * init_schema_from_text(int colcount, char * text){
   struct vector * datatypes = init_vector();
   char * tok = tc;
   while((tok = strsep(&tc, " "))){
-    printf("DEBUG TOK = %s\n", tok);
+    //printf("DEBUG TOK = %s\n", tok);
     struct datatype * dt = parse_string_to_datatype(tok);
     if(!dt){
       printf("ERROR: In init_schema_from_text, parse_string_to_datatype failed to parse datatype string %s\n", tok);

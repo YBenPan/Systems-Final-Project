@@ -24,7 +24,7 @@ struct table * init_table(char * tablename, char **columnnames, int colcount, st
   o->rowcount = 0;
   o->columnnames = calloc(colcount, sizeof(char[MAXIMUM_CHAR_COUNT_TABLE_NAME]));
   for(int i = 0; i < colcount; ++i){
-    //printf("%s\n", columnnames[i]);
+    printf("%s\n", columnnames[i]);
     strncpy(o->columnnames[i], columnnames[i], MAXIMUM_CHAR_COUNT_TABLE_NAME-1);
   }
   //printf("DEBUG T3\n");

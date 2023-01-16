@@ -24,6 +24,8 @@ void add_vector(struct vector *v, void *p);
 // returns thing that was removed
 void * remove_vector(struct vector *v);
 
+void free_vector(struct vector *v);
+
 // returns thing that was removed
 void * delete_vector(struct vector *v, int index);
 

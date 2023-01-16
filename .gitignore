@@ -38,6 +38,7 @@
 tabledebug
 parserdebug
 datatypedebug
+main
 
 # Debug files
 *.dSYM/

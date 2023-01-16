@@ -74,6 +74,8 @@ int add_row_cmd(struct table * table, char *args) {
   // print_table(tmp_table);
 
   printf("Row added successfully to table '%s'!\n\n", table->name);
+  free(row);
+  free(row_item);
 
   return 0;
 }
@@ -141,6 +143,7 @@ void table_main(struct table * table) {
       break;
     }
   }
+  free(input);
 }
 
 int table_parser(struct table * table, char *input) {
@@ -156,6 +159,7 @@ int table_parser(struct table * table, char *input) {
   else if (!strcmp(cmd, "PRINT")) {
     print_table(table);
     printf("\n");
+    free(cmd);
     return 0;
   }
   else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
@@ -193,6 +197,8 @@ int table_parser(struct table * table, char *input) {
     printf("Invalid command '%s'!\n\n", cmd);
     exit(EXIT_FAILURE);
   }
+  free(cmd);
+  return 0;
 }
 
 int select_table(char *args) {
@@ -209,6 +215,10 @@ int select_table(char *args) {
   table_main(table);
   
   // TODO: response after table_parser
+
+  free(table_name);
+  free(file);
+  free(table);
   return 0;
 }
 
@@ -323,6 +333,7 @@ int create_table(char *args) {
       add_vector(table_names, new_table_name);
       add_intvector(semaphore_keys, new_semaphore_key);
     }
+    
   }
     
   // Add new table's name and semaphore key to the vectors
@@ -352,6 +363,11 @@ int create_table(char *args) {
   printf("Semaphore keys file updated!\n");
   close(fd);
   printf("Table '%s' created successfully!\n\n", table_name);
+
+  free(col_input);
+  free(col_names);
+  free(table_names);
+  free(semaphore_keys);
   
   return 0;
 }
@@ -453,5 +469,6 @@ int global_parser(char *input) {
     exit(EXIT_FAILURE);
   }
 
+  free(cmd);
   return 0;
 }

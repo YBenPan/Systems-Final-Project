@@ -126,6 +126,7 @@ int add_col_cmd(struct table * table, char *args) {
 }
 
 void table_main(struct table * table) {
+  char *table_name = table->name;
   char *input = malloc(MAX_CMD_LENGTH);
   printf("Opened table '%s'. Entering table-specific shell...\n\n", table->name);
   
@@ -135,9 +136,33 @@ void table_main(struct table * table) {
     fgets(input, MAX_CMD_LENGTH, stdin);
     chop_newline(input);
 
-    // TODO: semaphore goes here
+    // Semaphores start here
+    int vector_size = 0, key = -1;
+    int fd = open("./sem", O_RDONLY);
+    read(fd, &vector_size, sizeof(int));
 
-    int r = table_parser(table, input);
+    // Read vectors from file
+    for (int i = 0; i < vector_size; i++) {
+      int new_table_name_size, new_semaphore_key;
+      read(fd, &new_table_name_size, sizeof(int));
+      char *new_table_name = malloc(new_table_name_size);
+      read(fd, new_table_name, new_table_name_size);
+      read(fd, &new_semaphore_key, sizeof(int));
+      if (!strcmp(table_name, new_table_name)) { // Found semaphore key
+        key = new_semaphore_key;
+        break;
+      }
+    }
+    if (key == -1) {
+      printf("Error: Semaphore key of table '%s' not found in the key-name pairing file!\n", table_name);
+      exit(EXIT_FAILURE);
+    }
+
+    // Check if table is currently being written to
+    // int semd = semget(key, 1, 0);
+    
+
+    int r = table_parser(table, input, key);
     if (r == -1) {
       printf("Table connection exiting. Back to global shell...\n\n");
       break;
@@ -146,27 +171,49 @@ void table_main(struct table * table) {
   free(input);
 }
 
-int table_parser(struct table * table, char *input) {
+int table_parser(struct table * table, char *input, int key) {
 
   // Get the command
   char *cmd = strsep(&input, " ");
 
+  int semd = semget(key, 1, 0);
+  struct sembuf sb;
+  sb.sem_num = 0; 
+  sb.sem_flg = SEM_UNDO;
+
   // Router for commands not requiring an argument
   if (!strcmp(cmd, "EXIT")) {
-    free(cmd);
+    // free(cmd);
     return -1;
   }
   else if (!strcmp(cmd, "PRINT")) {
+    // Down by 1
+    sb.sem_op = -1;
+    if (semop(semd, &sb, 1) == -1) {
+      printf("Error when performing an atomic operation: %s\n", strerror(errno));
+      exit(EXIT_FAILURE);
+    } 
+
     print_table(table);
     printf("\n");
-    free(cmd);
-    return 0;
-  }
-  else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
+    
+    // Up by 1
+    sb.sem_op = 1;
+    if (semop(semd, &sb, 1) == -1) {
+      printf("Error when performing an atomic operation: %s\n", strerror(errno));
+      exit(EXIT_FAILURE);
+    } 
     return 0;
   }
   else if (!input) {
     printf("Error: argument not supplied!\n\n");
+    exit(EXIT_FAILURE);
+  }
+
+  // Down by SEM_MAX
+  sb.sem_op = -_POSIX_SEM_VALUE_MAX;
+  if (semop(semd, &sb, 1) == -1) {
+    printf("Error when performing an atomic operation: %s\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
   
@@ -192,12 +239,21 @@ int table_parser(struct table * table, char *input) {
   else if (!strcmp(cmd, "QUERY")) { // TODO: Implement QUERY
 
   }
+  else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
+    return 0;
+  }
   else {
     // TODO: Ask user to try again instead, within SELECT
     printf("Invalid command '%s'!\n\n", cmd);
     exit(EXIT_FAILURE);
   }
-  free(cmd);
+
+  sb.sem_op = _POSIX_SEM_VALUE_MAX;
+  if (semop(semd, &sb, 1) == -1) {
+    printf("Error when performing an atomic operation: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  
   return 0;
 }
 
@@ -265,7 +321,7 @@ int create_table(char *args) {
 
   // Write table
   if (!write_table(table)) {
-    free(table);
+    // free(table);
   }
   else {
     printf("Creation of table '%s' failed: %s\n\n", table_name, strerror(errno));
@@ -364,8 +420,6 @@ int create_table(char *args) {
   close(fd);
   printf("Table '%s' created successfully!\n\n", table_name);
 
-  free(col_input);
-  free(col_names);
   free(table_names);
   free(semaphore_keys);
   
@@ -450,7 +504,6 @@ int global_parser(char *input) {
   char *cmd = strsep(&input, " ");
 
   if (!strcmp(cmd, "EXIT")) {
-    free(cmd);
     return -1;
   }
 
@@ -469,6 +522,5 @@ int global_parser(char *input) {
     exit(EXIT_FAILURE);
   }
 
-  free(cmd);
   return 0;
 }

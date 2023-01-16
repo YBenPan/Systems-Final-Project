@@ -12,7 +12,7 @@ int add_row_cmd(struct table * table, char *args);
 
 void table_main(struct table * table);
 
-int table_parser(struct table * table, char *input);
+int table_parser(struct table * table, char *input, int key);
 
 int select_table(char *args);
 

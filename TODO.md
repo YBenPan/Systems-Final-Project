@@ -15,8 +15,9 @@
   - [ ] find(void *). Could be useful for querying too
   - [ ] erase(index). use find
 - [ ] Vector of semaphore keys, each correspoding to a table
-  - [ ] In create_table, create semaphore, append key and name to file 
-  - [ ] In drop_table, find key-name pair in file and delete
+  - [X] In create_table, create semaphore, append key and name to file 
+  - [X] In drop_table, find key-name pair in file and delete
+  - [ ] Free unused variables
   - [ ] In select_table, find key-name pair in file, read/write??
     Already writing, trying to read (PRINT): Block. Good
     Already reading, trying to write: Block.

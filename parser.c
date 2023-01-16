@@ -350,9 +350,7 @@ int create_table(char *args) {
   }
 
   printf("Semaphore keys file updated!\n");
-
   close(fd);
-
   printf("Table '%s' created successfully!\n\n", table_name);
   
   return 0;
@@ -369,14 +367,65 @@ int drop_table(char *args) {
   strcat(file, file_ext);
   // printf("%s\n", file);
 
+  // Open table_name-semaphore_key pairing file
+  int fd = open("./sem", O_RDONLY, 0700);
+  struct vector * table_names;
+  struct intvector * semaphore_keys;
+  int vector_size = 0;
+
+  read(fd, &vector_size, sizeof(int));
+  printf("Vector size: %d\n", vector_size);
+  table_names = init_vector();
+  semaphore_keys = init_intvector();
+
+  // Read vectors from file
+  int tmp = vector_size;
+  for (int i = 0; i < tmp; i++) {
+    int new_table_name_size, new_semaphore_key;
+    read(fd, &new_table_name_size, sizeof(int));
+    char *new_table_name = malloc(new_table_name_size);
+    read(fd, new_table_name, new_table_name_size);
+    read(fd, &new_semaphore_key, sizeof(int));
+
+    // Skip the dropped table
+    if (strcmp(table_name, new_table_name)) {
+      add_vector(table_names, new_table_name);
+      add_intvector(semaphore_keys, new_semaphore_key);
+    }
+    else {
+      vector_size--;
+    }
+  }
+
+  // printf("---\n");
+  // printf("%d\n", vector_size);
+  // for (int i = 0; i < vector_size; i++) {
+  //   printf("%s: %d\n", table_names->values[i], semaphore_keys->values[i]);
+  // }
+  // printf("---\n");
+
+  fd = open("./sem", O_WRONLY | O_TRUNC, 0700);
+
+  // First integer identify the number of tables
+  write(fd, &vector_size, sizeof(int));
+
+  for (int i = 0; i < vector_size; i++) {
+    int strl = strlen(table_names->values[i]);
+    write(fd, &strl, sizeof(int)); // Length of table_name string
+    write(fd, table_names->values[i], strl);
+    write(fd, &semaphore_keys->values[i], sizeof(int));
+  }
+
+  printf("Semaphore keys file updated!\n");
+  close(fd);
+
   if (remove(file) == -1) {
-    printf("Dropping table '%s' failed: %s\n\n", table_name, strerror(errno));
+    printf("Removing table '%s' failed: %s\n\n", table_name, strerror(errno));
     exit(EXIT_FAILURE);
   }
-  else {
-    printf("Table '%s' dropped successfully!\n\n", table_name);
-    return 0;
-  }
+  printf("Table '%s' dropped successfully!\n\n", table_name);
+
+  return 0;
 }
 
 int global_parser(char *input) {

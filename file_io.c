@@ -8,6 +8,12 @@
 #include "table.h"
 #include "file_io.h"
 #include "vector.h"
+#include "schema.h"
+#include "datatypes.h"
+
+int get_alignment_padding(int raw_byte_count){
+  return (TABLE_FILE_BINARY_ROW_ALIGNMENT - (raw_byte_count % TABLE_FILE_BINARY_ROW_ALIGNMENT)) % TABLE_FILE_BINARY_ROW_ALIGNMENT;
+}
 
 // returns 0 if success
 char write_table(struct table * table){
@@ -21,7 +27,6 @@ char write_table(struct table * table){
     printf("Error when attempting to open the table file for writing, exiting: %s\n", strerror(errno));
     exit(1);
   }
-  
   int file_version = CURRENT_TABLE_FILE_VERSION;
   // HEADER
   write(fd, "TBLF", 4);
@@ -30,13 +35,20 @@ char write_table(struct table * table){
   write(fd, &(table->rowcount), sizeof(int));
   // SECTION 1: COLUMN IDENTIFIERS
   for(int i = 0; i < table->colcount; ++i){
-    write(fd, table->columnnames[i], MAXIMUM_CHAR_COUNT_TABLE_NAME);
+    write(fd, table->columnnames[i], MAXIMUM_COL_LENGTH);
   }
-  // SECTION 2: TABLE DATA
+  // SECTION 2: SCHEMA
+  for(int i = 0; i < table->colcount; ++i){
+    struct datatype * datatype = table->schm->datatypes->values[i];
+    write(fd, datatype, sizeof(struct datatype));
+  }
+  // SECTION 3: TABLE DATA
+  char nullseg[] = "\0\0\0\0\0\0\0\0";
   for(int i = 0; i < table->rowcount; ++i){
-    struct intvector * currow = (table->data->values)[i];
-    // table->colcount must be intvector->size, checked by add_row
-    write(fd, currow->values, sizeof(int) * table->colcount);
+    struct tablerow * currow = (table->data->values)[i];
+    int rs = (table->schm->rowbytesize[table->schm->colcount]);
+    write(fd, currow->data, rs);
+    write(fd, nullseg, get_alignment_padding(rs));
   }
   free(tablefilename);
   close(fd);
@@ -54,7 +66,6 @@ struct table * read_table(char * table_name){
     printf("Error when attempting to open the table file for reading, exiting: %s\n", strerror(errno));
     exit(1);
   }
-
   char nonce[5];
   read(fd, nonce, 4);
   nonce[4] = '\0';
@@ -69,27 +80,62 @@ struct table * read_table(char * table_name){
   read(fd, &col_count, sizeof(int));
   read(fd, &row_count, sizeof(int));
   struct table * table = NULL;
-  if(file_version == 0){
-    // file version 0 process code
+  if(file_version == 1){
+    // file version 1 process code
     char **columnnames = calloc(col_count, sizeof(char *));
     for(int i = 0; i < col_count; ++i){
       char *curname = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME, sizeof(char));
       read(fd, curname, MAXIMUM_CHAR_COUNT_TABLE_NAME);
       columnnames[i] = curname;
     }
-    table = init_table(table_name, columnnames, col_count);
+    struct vector * datatypes = init_vector();
+    for(int i = 0; i < col_count; ++i){
+      struct datatype * dt = malloc(sizeof(struct datatype));
+      read(fd, dt, sizeof(struct datatype));
+      add_vector(datatypes, dt);
+    }
+    struct schema * schema = init_schema(col_count, datatypes);
+    table = init_table(table_name, columnnames, col_count, schema);
+    for(int i = 0; i < col_count; ++i){
+      free(columnnames[i]);
+    }
+    free(columnnames);
+    for(int i = 0; i < row_count; ++i){
+      int rs = schema->rowbytesize[col_count];
+      char * rowbuff = calloc(schema->rowbytesize[col_count], sizeof(char));
+      read(fd, rowbuff, rs);
+      lseek(fd, get_alignment_padding(rs), SEEK_CUR);
+      struct tablerow * tblrow = malloc(sizeof(struct tablerow));
+      tblrow->schm = schema;
+      tblrow->data = rowbuff;
+      add_row(table, tblrow);
+    }
+  } else if(file_version == 0){
+    // file version 0 process code
+    struct vector * datatypes = init_vector();
+    for(int i = 0; i < col_count; ++i){
+      add_vector(datatypes, parse_string_to_datatype("int"));
+    }
+    struct schema * schema = init_schema(col_count, datatypes);
+    char **columnnames = calloc(col_count, sizeof(char *));
+    for(int i = 0; i < col_count; ++i){
+      char *curname = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME, sizeof(char));
+      read(fd, curname, MAXIMUM_CHAR_COUNT_TABLE_NAME);
+      columnnames[i] = curname;
+    }
+    table = init_table(table_name, columnnames, col_count, schema);
     //table->rowcount = row_count;
     for(int i = 0; i < col_count; ++i){
       free(columnnames[i]);
     }
     free(columnnames);
-    int * rowbuff = calloc(col_count, sizeof(int));
     for(int i = 0; i < row_count; ++i){
+      int * rowbuff = calloc(col_count, sizeof(int));
       read(fd, rowbuff, sizeof(int) * col_count);
       //printf("test input %d\n", i);
-      struct intvector * rowvec = init_intvector();
-      resize_intvector(rowvec, col_count);
-      memcpy(rowvec->values, rowbuff, sizeof(int) * col_count);
+      //struct intvector * rowvec = init_intvector();
+      //resize_intvector(rowvec, col_count);
+      //memcpy(rowvec->values, rowbuff, sizeof(int) * col_count);
 /*
       for(int i = 0; i < col_count; ++i){
         printf("rowbuff %d: %d\n", i, rowbuff[i]);
@@ -98,10 +144,12 @@ struct table * read_table(char * table_name){
         printf("rowvec->values %d: %d\n", i, rowvec->values[i]);
       }
 */
-      rowvec->size = col_count;
-      add_row(table, rowvec);
+      //rowvec->size = col_count;
+      struct tablerow * tblrow = malloc(sizeof(struct tablerow));
+      tblrow->schm = schema;
+      tblrow->data = (char *)rowbuff;
+      add_row(table, tblrow);
     }
-    free(rowbuff);
   } else {
     printf("ERROR: Encountered non-supported table file version %d, exiting!\n\n", file_version);
     exit(1);
@@ -153,13 +201,18 @@ char write_table_to_csv(struct table * table, char * output_file){
   //printf("DEBUG 2\n");
   write(fd, &newline_char, sizeof(char));
   for(int i = 0; i < table->rowcount; ++i){
-    struct intvector *currow = (table->data->values)[i];
+    struct tablerow *tablerow = (table->data->values)[i];
     for(int j = 0; j < table->colcount; ++j){
       if(j != 0){
         write(fd, &delim_char, sizeof(char));
       }
-      int cur = currow->values[j];
-      dprintf(fd, "%d", cur);
+      char * outputbuff = print_element_from_datatype_to_string(tablerow->data + tablerow->schm->rowbytesize[j], tablerow->schm->datatypes->values[j]);
+      char * csvified_buff = csv_ify(outputbuff);
+      dprintf(fd, "%s", csvified_buff);
+      free(outputbuff);
+      free(csvified_buff);
+      //int cur = currow->values[j];
+      //dprintf(fd, "%d", cur);
     }
     write(fd, &newline_char, sizeof(char));
   }

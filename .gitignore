@@ -36,6 +36,9 @@
 *.x86_64
 *.hex
 tabledebug
+parserdebug
+datatypedebug
+main
 
 # Debug files
 *.dSYM/
@@ -45,6 +48,7 @@ tabledebug
 
 # Table & CSV files
 *.tbl
+!sample-*.tbl
 *.csv
 
 # Kernel Module Compile Results

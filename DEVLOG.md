@@ -26,3 +26,7 @@ January 14:
 - 12:36AM: Finished select_table functionality - Ben
 - 6:04PM: Finished add_row_cmd functionality - Ben
 - 9:08PM: Finished add_col_cmd functionality - Ben
+
+January 15:
+- 5:20PM: Added schema and datatype structures to allow for columns to have different datatypes, add a parser that converts a string to formatted data based on the datatype - Frank
+- 7:18PM: Finished retrofitting core table functionality to use schema, rewrote tabledebug.c and file IO code to support new formatted tables (and file IO can also read in old formatted tables and write them in the new format) - Frank

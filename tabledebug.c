@@ -43,6 +43,12 @@ int main(){
   retval = add_row_from_text(table, schm, additionalvalues);
   printf("RETVAL: %d\n", retval); // should fail
   print_table(table);
+  printf("Trying to write table to file testing.tbl\n");
+  write_table(table);
+  struct table * table2 = read_table("testing");
+  printf("table 2 COLCOUNT: %d\n", table2->colcount);
+  printf("table 2 ROWCOUNT: %d\n", table2->rowcount);
+  print_table(table2);
 /*
   works!
   struct table * table2 = read_table("testingv0");

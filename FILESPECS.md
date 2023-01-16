@@ -36,10 +36,11 @@ BYTES (STARTOFFSET + 8 \* i) - (STARTOFFSET + 8 \* i + 7): Datatype of column i,
 
 START OFFSET: 72\*n+16
 
-SIZE: 4\*m\*n
+SIZE: m\*(data size of a row)
 
-ROW-MAJOR ORDER, TABLE[ROW][COL INDEX] -> STARTOFFSET + 4\*(n\*ROW + COL INDEX) to STARTOFFSET + 4\*(n\*ROW + COL INDEX) + 3 bytes
+ROW-MAJOR ORDER, TABLE[ROW] -> STARTOFFSET + ROW *\ (data size of a row) to STARTOFFSET + (ROW + 1) *\ (data size of a row) - 1
 
+DATA SIZE OF A ROW IS ROUNDED UP TO 8 BYTE SEGMENTS WHEN READING / WRITING
 
 ## Version 0:
 

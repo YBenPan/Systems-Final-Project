@@ -47,6 +47,7 @@ datatypedebug
 
 # Table & CSV files
 *.tbl
+!sample-*.tbl
 *.csv
 
 # Kernel Module Compile Results

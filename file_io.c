@@ -11,6 +11,10 @@
 #include "schema.h"
 #include "datatypes.h"
 
+int get_alignment_padding(int raw_byte_count){
+  return (TABLE_FILE_BINARY_ROW_ALIGNMENT - (raw_byte_count % TABLE_FILE_BINARY_ROW_ALIGNMENT)) % TABLE_FILE_BINARY_ROW_ALIGNMENT;
+}
+
 // returns 0 if success
 char write_table(struct table * table){
   // Put together table path
@@ -23,7 +27,6 @@ char write_table(struct table * table){
     printf("Error when attempting to open the table file for writing, exiting: %s\n", strerror(errno));
     exit(1);
   }
-/*
   int file_version = CURRENT_TABLE_FILE_VERSION;
   // HEADER
   write(fd, "TBLF", 4);
@@ -34,15 +37,21 @@ char write_table(struct table * table){
   for(int i = 0; i < table->colcount; ++i){
     write(fd, table->columnnames[i], MAXIMUM_CHAR_COUNT_TABLE_NAME);
   }
-  // SECTION 2: TABLE DATA
+  // SECTION 2: SCHEMA
+  for(int i = 0; i < table->colcount; ++i){
+    struct datatype * datatype = table->schm->datatypes->values[i];
+    write(fd, datatype, sizeof(struct datatype));
+  }
+  // SECTION 3: TABLE DATA
+  char nullseg[] = "\0\0\0\0\0\0\0\0";
   for(int i = 0; i < table->rowcount; ++i){
-    struct intvector * currow = (table->data->values)[i];
-    // table->colcount must be intvector->size, checked by add_row
-    write(fd, currow->values, sizeof(int) * table->colcount);
+    struct tablerow * currow = (table->data->values)[i];
+    int rs = (table->schm->rowbytesize[table->schm->colcount]);
+    write(fd, currow->data, rs);
+    write(fd, nullseg, get_alignment_padding(rs));
   }
   free(tablefilename);
   close(fd);
-*/
   return 0;
 }
 
@@ -50,14 +59,13 @@ struct table * read_table(char * table_name){
   // Put together table path
   char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
   strcpy(tablefilename, "./db/");
-  strncpy(tablefilename, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
+  strncat(tablefilename, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
   strcat(tablefilename, ".tbl");
   int fd = open(tablefilename, O_RDONLY);
   if(fd == -1){
     printf("Error when attempting to open the table file for reading, exiting: %s\n", strerror(errno));
     exit(1);
   }
-
   char nonce[5];
   read(fd, nonce, 4);
   nonce[4] = '\0';
@@ -72,7 +80,37 @@ struct table * read_table(char * table_name){
   read(fd, &col_count, sizeof(int));
   read(fd, &row_count, sizeof(int));
   struct table * table = NULL;
-  if(file_version == 0){
+  if(file_version == 1){
+    // file version 1 process code
+    char **columnnames = calloc(col_count, sizeof(char *));
+    for(int i = 0; i < col_count; ++i){
+      char *curname = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME, sizeof(char));
+      read(fd, curname, MAXIMUM_CHAR_COUNT_TABLE_NAME);
+      columnnames[i] = curname;
+    }
+    struct vector * datatypes = init_vector();
+    for(int i = 0; i < col_count; ++i){
+      struct datatype * dt = malloc(sizeof(struct datatype));
+      read(fd, dt, sizeof(struct datatype));
+      add_vector(datatypes, dt);
+    }
+    struct schema * schema = init_schema(col_count, datatypes);
+    table = init_table(table_name, columnnames, col_count, schema);
+    for(int i = 0; i < col_count; ++i){
+      free(columnnames[i]);
+    }
+    free(columnnames);
+    for(int i = 0; i < row_count; ++i){
+      int rs = schema->rowbytesize[col_count];
+      char * rowbuff = calloc(schema->rowbytesize[col_count], sizeof(char));
+      read(fd, rowbuff, rs);
+      lseek(fd, get_alignment_padding(rs), SEEK_CUR);
+      struct tablerow * tblrow = malloc(sizeof(struct tablerow));
+      tblrow->schm = schema;
+      tblrow->data = rowbuff;
+      add_row(table, tblrow);
+    }
+  } else if(file_version == 0){
     // file version 0 process code
     struct vector * datatypes = init_vector();
     for(int i = 0; i < col_count; ++i){

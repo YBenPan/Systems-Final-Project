@@ -10,7 +10,9 @@ void chop_newline(char *s);
 
 int add_row_cmd(struct table * table, char *args);
 
-void table_parser(struct table * table);
+void table_main(struct table * table);
+
+int table_parser(struct table * table, char *input);
 
 int select_table(char *args);
 
@@ -18,8 +20,6 @@ int create_table(char *args);
 
 int drop_table(char *args);
 
-void usr_input(char *input);
-
-void global_parser(char *input);
+int global_parser(char *input);
 
 #endif

@@ -2,11 +2,14 @@ OBJECTS= vector.o table.o
 CFLAGS= -Wall -Wextra
 LDFLAGS= -lm
 
+start: main
+	./main
+
+main: main.o parser.o table.o vector.o file_io.o
+	gcc $(CFLAGS) -o main main.o parser.o table.o vector.o file_io.o $(LDFLAGS)
+
 tabledebug: tabledebug.o table.o vector.o file_io.o schema.o datatypes.o
 	gcc $(CFLAGS) -o tabledebug tabledebug.o table.o vector.o file_io.o schema.o datatypes.o $(LDFLAGS)
-
-parserdebug: parserdebug.o parser.o table.o vector.o file_io.o
-	gcc $(CFLAGS) -o parserdebug parserdebug.o parser.o table.o vector.o file_io.o $(LDFLAGS)
 
 datatypedebug: datatypedebug.o datatypes.o
 	gcc $(CFLAGS) -o datatypedebug datatypedebug.o datatypes.o
@@ -14,7 +17,7 @@ datatypedebug: datatypedebug.o datatypes.o
 datatypedebug.o: datatypedebug.c datatypes.h
 	gcc -c $(CFLAGS) datatypedebug.c
 
-tabledebug.o: tabledebug.c table.h vector.h file_io.h
+tabledebug.o: tabledebug.c table.h vector.h file_io.h schema.h datatypes.h
 	gcc -c $(CFLAGS) tabledebug.c
 
 datatypes.o: datatypes.c datatypes.h
@@ -32,4 +35,5 @@ vector.o: vector.c vector.h
 clean:
 	rm -f *.o
 	rm -f tabledebug
-	rm -f parserdebug
+	rm -f datatypedebug
+	rm -f main

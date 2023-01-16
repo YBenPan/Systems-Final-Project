@@ -57,7 +57,7 @@ char write_table(struct table * table){
 
 struct table * read_table(char * table_name){
   // Put together table path
-  char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
+  char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME + 16, sizeof(char));
   strcpy(tablefilename, "./db/");
   strncat(tablefilename, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
   strcat(tablefilename, ".tbl");
@@ -151,7 +151,7 @@ struct table * read_table(char * table_name){
       add_row(table, tblrow);
     }
   } else {
-    printf("ERROR: Encountered non-supported table file version %d, exiting!\n", file_version);
+    printf("ERROR: Encountered non-supported table file version %d, exiting!\n\n", file_version);
     exit(1);
   }
   free(tablefilename);
@@ -184,7 +184,7 @@ char * csv_ify(char *term){
 char write_table_to_csv(struct table * table, char * output_file){
   int fd = open(output_file, O_CREAT | O_TRUNC | O_WRONLY, 0644);
   if(fd == -1){
-    printf("Error when attempting to open the table file for writing, exiting: %s\n", strerror(errno));
+    printf("Error when attempting to open the table file for writing, exiting: %s\n\n", strerror(errno));
     exit(1);
   }
   char delim_char = CSV_DELIMITER_CHARACTER;

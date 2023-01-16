@@ -18,7 +18,7 @@ void chop_newline(char *s) {
 int add_row_cmd(struct table * table, char *args) {  
   // Check syntax "(...)" and remove parentheses
   if (args[0] != '(' || args[strlen(args) - 1] != ')') {
-    printf("Syntax Error: Row must be surrounded by parentheses!\n");
+    printf("Syntax Error: Row must be surrounded by parentheses!\n\n");
     exit(EXIT_FAILURE);
   }
   strsep(&args, "(");
@@ -60,7 +60,7 @@ int add_row_cmd(struct table * table, char *args) {
   // struct table * tmp_table = read_table(table->name);
   // print_table(tmp_table);
 
-  printf("Row added successfully to table '%s'!\n", table->name);
+  printf("Row added successfully to table '%s'!\n\n", table->name);
 
   return 0;
 }
@@ -69,7 +69,7 @@ int add_col_cmd(struct table * table, char *args) {
   // Add column
   table->colcount++;
   if (table->colcount > MAXIMUM_COL_COUNT) {
-    printf("Error: Column limit exceeded!\n");
+    printf("Error: Column limit exceeded!\n\n");
     exit(EXIT_FAILURE);
   }
   strcpy(table->columnnames[table->colcount - 1], args);
@@ -100,44 +100,60 @@ int add_col_cmd(struct table * table, char *args) {
 
   // Write to table
   if (write_table(table) == 0) {
-    printf("Column added successfully to table '%s'!\n", table->name);
+    printf("Column added successfully to table '%s'!\n\n", table->name);
   }
   else {
-    printf("Error when writing to table: %s\n", strerror(errno));
+    printf("Error when writing to table: %s\n\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
 
   return 0;
 }
 
-void table_parser(struct table * table) {
-  // Table variables for ease of access 
-  char *table_name = table->name;
+void table_main(struct table * table) {
+  char *input = malloc(MAX_CMD_LENGTH);
+  printf("Opened table '%s'. Entering table-specific shell...\n\n", table->name);
+  
+  while (1) {
+    // Prompt for user input
+    printf("Input table command:\n");
+    fgets(input, MAX_CMD_LENGTH, stdin);
+    chop_newline(input);
 
-  // Prompt for user input
-  char *input_str = malloc(MAX_CMD_LENGTH);
-  printf("Opened table '%s'. Input table command:\n", table_name);
-  fgets(input_str, MAX_CMD_LENGTH, stdin);
-  chop_newline(input_str);
+    int r = table_parser(table, input);
+    if (r == -1) {
+      printf("Table connection exiting. Back to global shell...\n\n");
+      break;
+    }
+  }
+}
 
-  char *cmd = strsep(&input_str, " ");
+int table_parser(struct table * table, char *input) {
+
+  // Get the command
+  char *cmd = strsep(&input, " ");
 
   // Router for commands not requiring an argument
-  if (!strcmp(cmd, "PRINT")) {
+  if (!strcmp(cmd, "EXIT")) {
+    free(cmd);
+    return -1;
+  }
+  else if (!strcmp(cmd, "PRINT")) {
     print_table(table);
-    return;
+    printf("\n");
+    return 0;
   }
   else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
-    return;
+    return 0;
   }
-  else if (!input_str) {
-    printf("Error: argument not supplied!\n");
+  else if (!input) {
+    printf("Error: argument not supplied!\n\n");
     exit(EXIT_FAILURE);
   }
   
   // Router for commands requiring an argument
   if (!strcmp(cmd, "ADDROW")) {
-    add_row_cmd(table, input_str);
+    add_row_cmd(table, input);
   }
   else if (!strcmp(cmd, "DELROW")) { // TODO: Implement DELROW
 
@@ -149,7 +165,7 @@ void table_parser(struct table * table) {
 
   }
   else if (!strcmp(cmd, "ADDCOL")) { // TODO: Implement ADDCOL
-    add_col_cmd(table, input_str);
+    add_col_cmd(table, input);
   }
   else if (!strcmp(cmd, "DELCOL")) { // TODO: Implement DELCOL
 
@@ -159,7 +175,7 @@ void table_parser(struct table * table) {
   }
   else {
     // TODO: Ask user to try again instead, within SELECT
-    printf("Invalid command '%s'!\n", cmd);
+    printf("Invalid command '%s'!\n\n", cmd);
     exit(EXIT_FAILURE);
   }
 }
@@ -167,16 +183,15 @@ void table_parser(struct table * table) {
 int select_table(char *args) {
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
-  char *file_dir = "./db/";
-  char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
-  strcpy(file, file_dir);
-  file[strlen(file)] = '\0';
-  file = strcat(file, table_name);
+  char *file = malloc(sizeof(table_name) + 16);
+  strcpy(file, "./db/");
+  strncat(file, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
+  strcat(file, ".tbl");
   // printf("%s\n", file);
 
   // Open table
   struct table * table = read_table(table_name);
-  table_parser(table);
+  table_main(table);
   
   // TODO: response after table_parser
   return 0;
@@ -192,9 +207,9 @@ int create_table(char *args) {
 
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
-  char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
-  strcpy(file, file_dir);
-  file = strcat(file, table_name);
+  // char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
+  // strcpy(file, file_dir);
+  // file = strcat(file, table_name);
   // printf("%s\n", file);
 
   // 2D array for column names. See tabledebug.c
@@ -226,11 +241,11 @@ int create_table(char *args) {
   // Write table
   if (!write_table(table)) {
     free(table);
-    printf("Table '%s' created successfully!\n", table_name);
+    printf("Table '%s' created successfully!\n\n", table_name);
     return 0;
   }
   else {
-    printf("Creation of table '%s' failed: %s\n", table_name, strerror(errno));
+    printf("Creation of table '%s' failed: %s\n\n", table_name, strerror(errno));
     exit(EXIT_FAILURE);
   }
 }
@@ -247,43 +262,39 @@ int drop_table(char *args) {
   // printf("%s\n", file);
 
   if (remove(file) == -1) {
-    printf("Dropping table '%s' failed: %s\n", table_name, strerror(errno));
+    printf("Dropping table '%s' failed: %s\n\n", table_name, strerror(errno));
     exit(EXIT_FAILURE);
   }
   else {
-    printf("Table '%s' dropped successfully!\n", table_name);
+    printf("Table '%s' dropped successfully!\n\n", table_name);
     return 0;
   }
 }
 
-void usr_input(char *input) {
-  printf("Input global command to start:\n");
-  fgets(input, MAX_CMD_LENGTH, stdin);
-  chop_newline(input);
-}
-
-void global_parser(char *input) {
-  // Create a copy of input string
-  char *input_str = malloc(sizeof(input));
-  strcpy(input_str, input);
+int global_parser(char *input) {
 
   // Get the command
-  char *cmd = strsep(&input_str, " ");
-  // printf("%s\n", cmd);
-  // printf("%s\n", input_str);
+  char *cmd = strsep(&input, " ");
+
+  if (!strcmp(cmd, "EXIT")) {
+    free(cmd);
+    return -1;
+  }
 
   if (!strcmp(cmd, "SELECT")) {
-    select_table(input_str);
+    select_table(input);
   }
   else if (!strcmp(cmd, "CREATE")) {
-    create_table(input_str);
+    create_table(input);
   }
   else if (!strcmp(cmd, "DROP")) {
-    drop_table(input_str);
+    drop_table(input);
   }
   else {
-    printf("Invalid command '%s'!\n", cmd);
+    printf("Invalid command '%s'!\n\n", cmd);
     // TODO: Ask user to try again instead
     exit(EXIT_FAILURE);
   }
+
+  return 0;
 }

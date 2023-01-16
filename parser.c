@@ -53,6 +53,8 @@ int add_row_cmd(struct table * table, char *args) {
   // Write to table
   write_table(table);
 
+  sleep(3); // To test semaphores
+
   // TODO: Append to table instead of overwriting. Not working.
   // char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
   // strncpy(tablefilename, table->name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
@@ -125,44 +127,38 @@ int add_col_cmd(struct table * table, char *args) {
   return 0;
 }
 
-void table_main(struct table * table) {
-  char *table_name = table->name;
+void table_main(char *table_name) {
   char *input = malloc(MAX_CMD_LENGTH);
-  printf("Opened table '%s'. Entering table-specific shell...\n\n", table->name);
+  printf("Opened table '%s'. Entering table-specific shell...\n\n", table_name);
+  // Semaphores start here
+  int vector_size = 0, key = -1;
+  int fd = open("./sem", O_RDONLY);
+  read(fd, &vector_size, sizeof(int));
+
+  // Read vectors from file
+  for (int i = 0; i < vector_size; i++) {
+    int new_table_name_size, new_semaphore_key;
+    read(fd, &new_table_name_size, sizeof(int));
+    char *new_table_name = malloc(new_table_name_size);
+    read(fd, new_table_name, new_table_name_size);
+    read(fd, &new_semaphore_key, sizeof(int));
+    if (!strcmp(table_name, new_table_name)) { // Found semaphore key
+      key = new_semaphore_key;
+      break;
+    }
+  }
+  if (key == -1) {
+    printf("Error: Semaphore key of table '%s' not found in the key-name pairing file!\n", table_name);
+    exit(EXIT_FAILURE);
+  }
   
   while (1) {
     // Prompt for user input
     printf("Input table command:\n");
     fgets(input, MAX_CMD_LENGTH, stdin);
     chop_newline(input);
-
-    // Semaphores start here
-    int vector_size = 0, key = -1;
-    int fd = open("./sem", O_RDONLY);
-    read(fd, &vector_size, sizeof(int));
-
-    // Read vectors from file
-    for (int i = 0; i < vector_size; i++) {
-      int new_table_name_size, new_semaphore_key;
-      read(fd, &new_table_name_size, sizeof(int));
-      char *new_table_name = malloc(new_table_name_size);
-      read(fd, new_table_name, new_table_name_size);
-      read(fd, &new_semaphore_key, sizeof(int));
-      if (!strcmp(table_name, new_table_name)) { // Found semaphore key
-        key = new_semaphore_key;
-        break;
-      }
-    }
-    if (key == -1) {
-      printf("Error: Semaphore key of table '%s' not found in the key-name pairing file!\n", table_name);
-      exit(EXIT_FAILURE);
-    }
-
-    // Check if table is currently being written to
-    // int semd = semget(key, 1, 0);
     
-
-    int r = table_parser(table, input, key);
+    int r = table_parser(table_name, input, key);
     if (r == -1) {
       printf("Table connection exiting. Back to global shell...\n\n");
       break;
@@ -171,29 +167,32 @@ void table_main(struct table * table) {
   free(input);
 }
 
-int table_parser(struct table * table, char *input, int key) {
-
-  // Get the command
-  char *cmd = strsep(&input, " ");
+int table_parser(char *table_name, char *input, int key) {
+  
+  struct table * table;
 
   int semd = semget(key, 1, 0);
+  // int v = semctl(semd, 0, GETVAL, 0);
+  // printf("%d\n", v);
+
   struct sembuf sb;
   sb.sem_num = 0; 
   sb.sem_flg = SEM_UNDO;
+  // Down by 1
+  sb.sem_op = -1;
+  if (semop(semd, &sb, 1) == -1) {
+    printf("Error when performing an atomic operation: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  } 
 
+  char *cmd = strsep(&input, " ");
   // Router for commands not requiring an argument
   if (!strcmp(cmd, "EXIT")) {
     // free(cmd);
     return -1;
   }
   else if (!strcmp(cmd, "PRINT")) {
-    // Down by 1
-    sb.sem_op = -1;
-    if (semop(semd, &sb, 1) == -1) {
-      printf("Error when performing an atomic operation: %s\n", strerror(errno));
-      exit(EXIT_FAILURE);
-    } 
-
+    table = read_table(table_name);
     print_table(table);
     printf("\n");
     
@@ -210,13 +209,13 @@ int table_parser(struct table * table, char *input, int key) {
     exit(EXIT_FAILURE);
   }
 
-  // Down by SEM_MAX
-  sb.sem_op = -_POSIX_SEM_VALUE_MAX;
+  // Down by SEM_MAX - 1
+  sb.sem_op = -(_POSIX_SEM_VALUE_MAX - 1);
   if (semop(semd, &sb, 1) == -1) {
     printf("Error when performing an atomic operation: %s\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
-  
+  table = read_table(table_name);
   // Router for commands requiring an argument
   if (!strcmp(cmd, "ADDROW")) {
     add_row_cmd(table, input);
@@ -253,6 +252,11 @@ int table_parser(struct table * table, char *input, int key) {
     printf("Error when performing an atomic operation: %s\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
+
+  // v = semctl(semd, 0, GETVAL, 0);
+  // printf("%d\n", v);
+
+  free(table);
   
   return 0;
 }
@@ -267,14 +271,10 @@ int select_table(char *args) {
   // printf("%s\n", file);
 
   // Open table
-  struct table * table = read_table(table_name);
-  table_main(table);
+  table_main(table_name);
   
   // TODO: response after table_parser
 
-  free(table_name);
-  free(file);
-  free(table);
   return 0;
 }
 
@@ -444,7 +444,7 @@ int drop_table(char *args) {
   int vector_size = 0;
 
   read(fd, &vector_size, sizeof(int));
-  printf("Vector size: %d\n", vector_size);
+  // printf("Vector size: %d\n", vector_size);
   table_names = init_vector();
   semaphore_keys = init_intvector();
 

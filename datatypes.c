@@ -220,34 +220,42 @@ char * parse_string_to_data(char * strinput, struct datatype * dt){
 }
 
 void print_element_from_datatype(char * buff, struct datatype * dt){
+  char * o = print_element_from_datatype_to_string(buff, dt);
+  printf("%s", o);
+  free(o);
+}
+
+char * print_element_from_datatype_to_string(char * buff, struct datatype * dt){
   if(dt->type >= TOTAL_DATATYPE_COUNT){
-    printf("ERROR: print_element_from_datatype was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
+    printf("ERROR: print_element_from_datatype_to_string was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
     exit(1);
   }
+  char * output = calloc(MAX_DATAVALUE_OUTPUT_LENGTH, sizeof(char));
   switch(dt->type){
     case DATATYPE_INT:
-      printf("%d", *((int *)buff));
+      snprintf(output, MAX_DATAVALUE_OUTPUT_LENGTH, "%d", *((int *)buff));
       break;
     case DATATYPE_SMALLINT:
-      printf("%hd", *((short *)buff));
+      snprintf(output, MAX_DATAVALUE_OUTPUT_LENGTH, "%hd", *((short *)buff));
       break;
     case DATATYPE_TINYINT:
-      printf("%hhd", *((signed char *)buff));
+      snprintf(output, MAX_DATAVALUE_OUTPUT_LENGTH, "%hhd", *((signed char *)buff));
       break;
     case DATATYPE_LONG:
-      printf("%lld", *((long long *)buff));
+      snprintf(output, MAX_DATAVALUE_OUTPUT_LENGTH, "%lld", *((long long *)buff));
       break;
     case DATATYPE_FLOAT:
-      printf("%f", *((float *)buff));
+      snprintf(output, MAX_DATAVALUE_OUTPUT_LENGTH, "%f", *((float *)buff));
       break;
     case DATATYPE_DOUBLE:
-      printf("%lf", *((double *)buff));
+      snprintf(output, MAX_DATAVALUE_OUTPUT_LENGTH, "%lf", *((double *)buff));
       break;
     case DATATYPE_CHAR:
-      printf("%c", *buff);
+      snprintf(output, MAX_DATAVALUE_OUTPUT_LENGTH, "%c", *buff);
       break;
     case DATATYPE_TEXT:
-      printf("%-*s", dt->args - 1, buff);
+      snprintf(output, MAX_DATAVALUE_OUTPUT_LENGTH, "%-*s", dt->args - 1, buff);
       break;
   }
+  return output;
 }

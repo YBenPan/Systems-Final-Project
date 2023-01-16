@@ -201,13 +201,18 @@ char write_table_to_csv(struct table * table, char * output_file){
   //printf("DEBUG 2\n");
   write(fd, &newline_char, sizeof(char));
   for(int i = 0; i < table->rowcount; ++i){
-    struct intvector *currow = (table->data->values)[i];
+    struct tablerow *tablerow = (table->data->values)[i];
     for(int j = 0; j < table->colcount; ++j){
       if(j != 0){
         write(fd, &delim_char, sizeof(char));
       }
-      int cur = currow->values[j];
-      dprintf(fd, "%d", cur);
+      char * outputbuff = print_element_from_datatype_to_string(tablerow->data + tablerow->schm->rowbytesize[j], tablerow->schm->datatypes->values[j]);
+      char * csvified_buff = csv_ify(outputbuff);
+      dprintf(fd, "%s", csvified_buff);
+      free(outputbuff);
+      free(csvified_buff);
+      //int cur = currow->values[j];
+      //dprintf(fd, "%d", cur);
     }
     write(fd, &newline_char, sizeof(char));
   }

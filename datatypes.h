@@ -25,6 +25,8 @@ struct datatype{
 
 #define DATATYPE_REQ_ARGUMENTS {0, 0, 0, 0, 0, 0, 0, 1}
 
+#define MAX_DATAVALUE_OUTPUT_LENGTH 1024
+
 void print_datatype(struct datatype * dt);
 
 int get_datatype_size(struct datatype * dt);
@@ -34,5 +36,7 @@ struct datatype * parse_string_to_datatype(char * strinput);
 char * parse_string_to_data(char * strinput, struct datatype * dt);
 
 void print_element_from_datatype(char * buff, struct datatype * dt);
+
+char * print_element_from_datatype_to_string(char * buff, struct datatype * dt);
 
 #endif

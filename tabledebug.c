@@ -49,6 +49,8 @@ int main(){
   printf("table 2 COLCOUNT: %d\n", table2->colcount);
   printf("table 2 ROWCOUNT: %d\n", table2->rowcount);
   print_table(table2);
+  printf("Writing table to tabletest.csv\n");
+  write_table_to_csv(table2, "tabletest.csv");
 /*
   works!
   struct table * table2 = read_table("testingv0");

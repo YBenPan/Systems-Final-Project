@@ -18,10 +18,10 @@
   - [X] In create_table, create semaphore, append key and name to file 
   - [X] In drop_table, find key-name pair in file and delete
   - [X] Free unused variables
-  - [ ] In select_table, find key-name pair in file, read/write??
+  - [X] In select_table, find key-name pair in file, read/write??
     Already writing, trying to read (PRINT): Block. Good
     Already reading, trying to write: Block.
     Already writing, trying to write: Block. Need to refresh? Can implement later
     Read, read: No block.
-- [ ] Reorganize function to read from key-name pair file
-- [ ] Semaphore value = INTMAX. Read -= 1, Write -= INTMAX
+- [ ] Create function to read from key-name pair file
+- [X] Semaphore value = INTMAX. Read -= 1, Write -= INTMAX

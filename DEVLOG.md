@@ -29,3 +29,6 @@ January 14:
 
 January 15: 
 - 4:58PM: Implemented global and table "shells" - Ben
+
+January 16:
+- 1:23AM: Finished semaphores (mostly) - Ben

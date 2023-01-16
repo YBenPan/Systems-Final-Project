@@ -35,7 +35,7 @@ char write_table(struct table * table){
   write(fd, &(table->rowcount), sizeof(int));
   // SECTION 1: COLUMN IDENTIFIERS
   for(int i = 0; i < table->colcount; ++i){
-    write(fd, table->columnnames[i], MAXIMUM_CHAR_COUNT_TABLE_NAME);
+    write(fd, table->columnnames[i], MAXIMUM_COL_LENGTH);
   }
   // SECTION 2: SCHEMA
   for(int i = 0; i < table->colcount; ++i){

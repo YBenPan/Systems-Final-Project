@@ -5,11 +5,12 @@
 #include "schema.h"
 
 #define MAXIMUM_CHAR_COUNT_TABLE_NAME 64
+#define MAXIMUM_COL_LENGTH 64
 #define MAXIMUM_COL_COUNT 64
 
 struct table{
   char name[MAXIMUM_CHAR_COUNT_TABLE_NAME];
-  char (*columnnames)[MAXIMUM_COL_COUNT];
+  char (*columnnames)[MAXIMUM_COL_LENGTH];
   struct schema * schm;
   int colcount;
   int rowcount;

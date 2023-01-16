@@ -11,6 +11,8 @@
 #include "table.h"
 #include "vector.h"
 #include "file_io.h"
+#include "schema.h"
+#include "datatypes.h"
 
 void chop_newline(char *s) {
   size_t ln = strlen(s) - 1;
@@ -19,6 +21,7 @@ void chop_newline(char *s) {
 }
 
 int add_row_cmd(struct table * table, char *args) {  
+  //printf("table data size: %d\n", table->data->size);
   // Check syntax "(...)" and remove parentheses
   if (args[0] != '(' || args[strlen(args) - 1] != ')') {
     printf("Syntax Error: Row must be surrounded by parentheses!\n\n");
@@ -86,14 +89,95 @@ int add_row_cmd(struct table * table, char *args) {
 }
 
 int add_col_cmd(struct table * table, char *args) {
+  //printf("table data size: %d\n", table->data->size);
   // Add column
   table->colcount++;
   if (table->colcount > MAXIMUM_COL_COUNT) {
+    table->colcount--;
     printf("Error: Column limit exceeded!\n\n");
     exit(EXIT_FAILURE);
   }
-  strcpy(table->columnnames[table->colcount - 1], args);
+  //strcpy(table->columnnames[table->colcount - 1], args);
+  
+  // don't actually add it yet so we can revert it
+  table->colcount--;
 
+  // Fill in new column (with default entry because otherwise this will become hell)
+
+  printf("Input type of entries in the new column:\n");
+  char input[MAX_CMD_LENGTH];
+  fgets(input, MAX_CMD_LENGTH, stdin);
+  chop_newline(input);
+
+  //printf("table data size: %d\n", table->data->size);
+
+  struct datatype * new_data_type = parse_string_to_datatype(input);
+  if(!new_data_type){
+    printf("ERROR: datatype %s invalid, program exiting!\n\n", input);
+    exit(EXIT_FAILURE);
+  }
+
+  printf("Input default entry for each element in new column:\n");
+  char input2[MAX_CMD_LENGTH];
+  fgets(input2, MAX_CMD_LENGTH, stdin);
+  chop_newline(input2);
+
+  char *new_data_buff = parse_string_to_data(input2, new_data_type);
+  if(!new_data_buff){
+    printf("ERROR: Default entry %s couldn't be parsed to datatype ", input2);
+    print_datatype(new_data_type);
+    printf(", program exiting!\n\n");
+    exit(EXIT_FAILURE);
+  }
+
+  //printf("table data size: %d\n", table->data->size);
+
+  // input validation done, now actually start changing values
+
+  // step 1: increment col count:
+  table->colcount++;
+  table->schm->colcount++;
+
+  // step 2: update column names
+  char (*newcolnames)[MAXIMUM_COL_LENGTH] = realloc(table->columnnames, table->colcount * MAXIMUM_COL_LENGTH);
+  if(!newcolnames){
+    printf("ERROR in add_col_cmd: realloc returned null pointer, program exiting!\n\n");
+    exit(EXIT_FAILURE);
+  }
+
+  //printf("table data size: %d\n", table->data->size);
+
+  table->columnnames = newcolnames;
+  strncpy(newcolnames[table->colcount - 1], args, MAXIMUM_COL_LENGTH - 1);
+  table->columnnames[table->colcount - 1][MAXIMUM_COL_LENGTH - 1] = '\0';
+
+  //printf("table data size: %d\n", table->data->size);
+
+  // step 3: update schema
+  //printf("NEW DATA TYPE: ");
+  //print_datatype(new_data_type);
+  //printf("\n");
+  add_vector(table->schm->datatypes, new_data_type);
+  //printf("DEBUG\n");
+  recompute_rowbytesize(table->schm);
+  //printf("DEBUG2\n");
+
+  //printf("table data size: %d\n", table->data->size);
+
+  // step 4: update table values
+  for(int i = 0; i < table->rowcount; ++i){
+    //printf("rowcount %d, i=%d \n", table->rowcount, i);
+    //printf("DEBUG2\n");
+    //printf("table data size: %d\n", table->data->size);
+    struct tablerow * currow = (table->data->values)[i];
+    //printf("DEBUG\n");
+    //printf("old buff length: %d\n", table->schm->rowbytesize[table->colcount - 1]);
+    //printf("new buff length: %d\n", table->schm->rowbytesize[table->colcount]);
+    currow->data = realloc(currow->data, table->schm->rowbytesize[table->colcount]);
+    memcpy(currow->data + table->schm->rowbytesize[table->colcount - 1], new_data_buff, get_datatype_size(new_data_type));
+  }
+
+/*
   // Fill in new column
   printf("Fill each element in the new column:\n");
   for (int i = 0; i < table->rowcount; i++) {
@@ -117,6 +201,7 @@ int add_col_cmd(struct table * table, char *args) {
     // Add to vector
     add_intvector(currow, new_val);
   }
+*/
 
   // Write to table
   if (write_table(table) == 0) {
@@ -204,10 +289,10 @@ int table_parser(struct table * table, char *input) {
 int select_table(char *args) {
   // Process args and put together file path
   char *table_name = strsep(&args, " ");
-  char *file = malloc(sizeof(table_name) + 16);
-  strcpy(file, "./db/");
-  strncat(file, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
-  strcat(file, ".tbl");
+  //char *file = malloc(sizeof(table_name) + 16);
+  //strcpy(file, "./db/");
+  //strncat(file, table_name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
+  //strcat(file, ".tbl");
   // printf("%s\n", file);
 
   // Open table
@@ -252,7 +337,7 @@ int create_table(char *args) {
     if (!col_name) {
       break;
     }
-    col_names[col_cnt] = malloc((strlen(col_name) + 1) * sizeof(*col_names[col_cnt]));
+    col_names[col_cnt] = malloc((strlen(col_name) + 1) * sizeof(char));
     strcpy(col_names[col_cnt++], col_name);
     printf("%s\n", col_name);
   }

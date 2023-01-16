@@ -31,3 +31,5 @@ January 15:
 - 4:58PM: Implemented global and table "shells" - Ben
 - 5:20PM: Added schema and datatype structures to allow for columns to have different datatypes, add a parser that converts a string to formatted data based on the datatype - Frank
 - 7:18PM: Finished retrofitting core table functionality to use schema, rewrote tabledebug.c and file IO code to support new formatted tables (and file IO can also read in old formatted tables and write them in the new format) - Frank
+- 7:53PM: Worked to merge parser features to support new schema, ADDROW and CREATE now work again - Frank
+- 8:39PM: Finally merged parser features with new table style, got ADDCOL working - Frank

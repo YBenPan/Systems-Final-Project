@@ -419,7 +419,9 @@ int create_table(char *args) {
   col_input = malloc(MAX_CMD_LENGTH);
   fgets(col_input, MAX_CMD_LENGTH, stdin);
   //printf("DEBUG2\n");
+  printf("DEBUG1: col_input =%s\n", col_input);
   chop_newline(col_input);
+  printf("DEBUG2: col_input =%s\n", col_input);
   //printf("DEBUG\n");
   struct schema * schema = init_schema_from_text(col_cnt, col_input);
   //printf("DEBUG3\n");

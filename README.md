@@ -65,11 +65,11 @@ Another feature we want to implement is the relational model.
 - Forking server & socket-based system to allow for multiple clients to connect to database server
 - Different client code that allows you to connect to a server
 
-## Phase 3: Advanced Queries, Features (~3-4 days)
+## Phase 3: Advanced Queries, Features (~3-4 days) - RAN OUT OF TIME
 - Better parsing code to allow for more complicated queries (eg. AND in conditions, wildcard support beyond `SELECT * FROM table_name`)
 - Client authentication, eg. require credentials for client to modify table
 - Upgrade schema to support primary key / unique specifiers, basic relational model support
 
-## Phase 4: Optimisation (~2-3 days)
+## Phase 4: Optimisation (~2-3 days) - RAN OUT OF TIME
 - Use data structures (eg. aforementioned B-Tree) to speed operations up
 - Improve parsing algorithm if needed to support more edge cases / be quicker

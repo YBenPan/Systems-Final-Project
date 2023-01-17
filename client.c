@@ -56,12 +56,12 @@ int main(int argc, char * argv[]){
   printf("CLIENT: Established connection with server!\n");
   send_message_to_server(socket_fd, NULL);
   while(1){
+    read(socket_fd, buff, MAX_EXCHANGE_LENGTH);
+    printf("%s", buff);
     char buff[MAX_EXCHANGE_LENGTH];
     //printf("Input command to send to server:\n");
     fgets(buff, MAX_EXCHANGE_LENGTH, stdin);
     //chop_newline(buff);
     send_message_to_server(socket_fd, buff);
-    read(socket_fd, buff, MAX_EXCHANGE_LENGTH);
-    printf("%s", buff);
   }
 }

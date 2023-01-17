@@ -105,8 +105,35 @@ int add_row_cmd(struct table * table, char *args) {
   return 0;
 }
 
+int del_row_cmd(struct table * table, char *args) {
+  // Parse row_index
+  int row_index = 0;
+  if (sscanf(args, "%d", &row_index) < 1) {
+    printf("Error: invalid argument. Exiting!\n");
+    return 0;
+  }
+  
+  // Verify row_index falls in the range
+  if (row_index < 0 || row_index >= table->rowcount) {
+    printf("Error: Row index outside of the range of the table rows. Exiting!\n");
+    return 0;
+  }
+
+  // Delete row by row index
+  delete_vector(table->data, row_index);
+  table->rowcount--;
+  printf("Row %d successfully deleted! Updated table: \n", row_index);
+  print_table(table);
+  printf("\n");
+
+  // Write to file
+  write_table(table);
+
+  return 0;
+}
+
 int add_col_cmd(struct table * table, char *args) {
-  //printf("table data size: %d\n", table->data->size);
+  // printf("table data size: %d\n", table->data->size);
   // Add column
   table->colcount++;
   if (table->colcount > MAXIMUM_COL_COUNT) {
@@ -325,6 +352,7 @@ int table_parser(char *table_name, char *input, int key) {
   }
   else if (!strcmp(cmd, "DELROW")) { // TODO: Implement DELROW
     checkInput(input);
+    del_row_cmd(table, input);
   }
   else if (!strcmp(cmd, "SETROW")) { // TODO: Implement SETROW
     checkInput(input);

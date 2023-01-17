@@ -25,3 +25,6 @@
     Read, read: No block.
 - [ ] Create function to read from key-name pair file
 - [X] Semaphore value = INTMAX. Read -= 1, Write -= INTMAX
+
+## Commands
+- [ ] Random output of col names after commands

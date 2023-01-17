@@ -49,7 +49,7 @@ void * delete_vector(struct vector *v, int index){
     for(int i = index; i < v->size - 1; i++){
       v->values[i] = v->values[i+1];
     }
-    v->size--;
+    free(v->values[--v->size]);
   }
   return copy;
 }

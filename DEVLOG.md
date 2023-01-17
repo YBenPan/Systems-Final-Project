@@ -36,3 +36,4 @@ January 15:
 
 January 16:
 - 1:23AM: Finished semaphores (mostly) - Ben
+- 9:44PM: Implement DELROW - Ben

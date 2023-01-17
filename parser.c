@@ -19,7 +19,7 @@
 #include "schema.h"
 #include "datatypes.h"
 
-#define checkInput(input) {if (!input) { printf("Error: argument not supplied!\n\n"); return 0; }}
+#define checkInput(input) {if (!input) { printf("Error: argument not supplied!\n\n"); return 1; }}
 
 // union semun {
 //    int              val;    /* Value for SETVAL */
@@ -40,7 +40,7 @@ int add_row_cmd(struct table * table, char *args) {
   // Check syntax "(...)" and remove parentheses
   if (args[0] != '(' || args[strlen(args) - 1] != ')') {
     printf("Syntax Error: Row must be surrounded by parentheses!\n\n");
-    return 0;
+    return 1;
   }
   strsep(&args, "(");
   args[strlen(args) - 1] = '\0';
@@ -60,7 +60,7 @@ int add_row_cmd(struct table * table, char *args) {
   if(row->size != table->colcount){
     printf("Syntax Error: Row must have colcount = %d elements, found %d elements instead, exiting!\n\n", table->colcount, row->size);
     free_vector(row);
-    return 0;
+    return 1;
   }
 
   // Add row using function in table.c
@@ -69,7 +69,7 @@ int add_row_cmd(struct table * table, char *args) {
 
   if(retval){
     printf("Encountered error in add_row_from_text when trying to add_row, exiting!\n\n");
-    return 0;
+    return 1;
   }
 
   // Add row using function in table.c
@@ -110,13 +110,13 @@ int del_row_cmd(struct table * table, char *args) {
   int row_index = 0;
   if (sscanf(args, "%d", &row_index) < 1) {
     printf("Error: invalid row index. Exiting!\n");
-    return 0;
+    return 1;
   }
   
   // Verify row_index falls in the range
   if (row_index < 0 || row_index >= table->rowcount) {
     printf("Error: Row index outside of the range of the table rows. Exiting!\n");
-    return 0;
+    return 1;
   }
 
   // Delete row by row index
@@ -138,21 +138,24 @@ int set_row_cmd(struct table * table, char *args) {
   char *row_index_str = strsep(&args, " "); 
   if (sscanf(row_index_str, "%d", &row_index) < 1) {
     printf("Error: invalid row index. Exiting!\n");
-    return 0;
+    return 1;
   }
 
   // Verify row_index falls in the range and args is correct
   if (row_index < 0 || row_index >= table->rowcount) {
     printf("Error: Row index outside of the range of the table rows. Exiting!\n");
-    return 0;
+    return 1;
   }
   if (!args) { 
     printf("Error: invalid row to be updated. Exiting!\n");
-    return 0;
+    return 1;
   }
 
   // Add row to table first
-  add_row_cmd(table, args);
+  if (add_row_cmd(table, args)) {
+    printf("Error: adding row to table failed. Exiting!\n");
+    return 1;
+  }
 
   // Set row by row index
   table->data->values[row_index] = table->data->values[--table->rowcount];
@@ -174,7 +177,7 @@ int add_col_cmd(struct table * table, char *args) {
   if (table->colcount > MAXIMUM_COL_COUNT) {
     table->colcount--;
     printf("Error: Column limit exceeded!\n\n");
-    return 0;
+    return 1;
   }
   //strcpy(table->columnnames[table->colcount - 1], args);
   
@@ -193,7 +196,7 @@ int add_col_cmd(struct table * table, char *args) {
   struct datatype * new_data_type = parse_string_to_datatype(input);
   if(!new_data_type){
     printf("ERROR: datatype %s invalid, program exiting!\n\n", input);
-    return 0;
+    return 1;
   }
 
   printf("Input default entry for each element in new column:\n");
@@ -206,7 +209,7 @@ int add_col_cmd(struct table * table, char *args) {
     printf("ERROR: Default entry %s couldn't be parsed to datatype ", input2);
     print_datatype(new_data_type);
     printf(", program exiting!\n\n");
-    return 0;
+    return 1;
   }
 
   //printf("table data size: %d\n", table->data->size);
@@ -221,7 +224,7 @@ int add_col_cmd(struct table * table, char *args) {
   char (*newcolnames)[MAXIMUM_COL_LENGTH] = realloc(table->columnnames, table->colcount * MAXIMUM_COL_LENGTH);
   if(!newcolnames){
     printf("ERROR in add_col_cmd: realloc returned null pointer, program exiting!\n\n");
-    return 0;
+    return 1;
   }
 
   //printf("table data size: %d\n", table->data->size);
@@ -288,7 +291,7 @@ int add_col_cmd(struct table * table, char *args) {
   }
   else {
     printf("Error when writing to table: %s\n\n", strerror(errno));
-    return 0;
+    return 1;
   }
 
   return 0;
@@ -349,7 +352,7 @@ int table_parser(char *table_name, char *input, int key) {
   sb.sem_op = -1;
   if (semop(semd, &sb, 1) == -1) {
     printf("Error when performing an atomic operation: %s\n", strerror(errno));
-    return 0;
+    return 1;
   } 
 
   char *cmd = strsep(&input, " ");
@@ -367,7 +370,7 @@ int table_parser(char *table_name, char *input, int key) {
     sb.sem_op = 1;
     if (semop(semd, &sb, 1) == -1) {
       printf("Error when performing an atomic operation: %s\n", strerror(errno));
-      return 0;
+      return 1;
     } 
     return 0;
   }
@@ -376,7 +379,7 @@ int table_parser(char *table_name, char *input, int key) {
   sb.sem_op = -(_POSIX_SEM_VALUE_MAX - 1);
   if (semop(semd, &sb, 1) == -1) {
     printf("Error when performing an atomic operation: %s\n", strerror(errno));
-    return 0;
+    return 1;
   }
   table = read_table(table_name);
 
@@ -412,13 +415,13 @@ int table_parser(char *table_name, char *input, int key) {
   }
   else {
     printf("Invalid command '%s'!\n\n", cmd);
-    return 0;
+    return 1;
   }
 
   sb.sem_op = _POSIX_SEM_VALUE_MAX;
   if (semop(semd, &sb, 1) == -1) {
     printf("Error when performing an atomic operation: %s\n", strerror(errno));
-    return 0;
+    return 1;
   }
 
   // v = semctl(semd, 0, GETVAL, 0);
@@ -458,7 +461,7 @@ int create_table(char *args) {
   char *table_name = strsep(&args, " ");
   if(!table_name){
     printf("ERROR: Invalid table name! Exiting!\n");
-    return 0;
+    return 1;
   }
   // char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
   // strcpy(file, file_dir);
@@ -499,7 +502,7 @@ int create_table(char *args) {
     for(int i = 0; i < col_cnt; ++i){
       free(col_names[i]);
     }
-    return 0;
+    return 1;
   }
   //printf("DEBUG4\n");
   // Initialize table and free col_names
@@ -515,7 +518,7 @@ int create_table(char *args) {
   }
   else {
     printf("Creation of table '%s' failed: %s\n\n", table_name, strerror(errno));
-    return 0;
+    return 1;
   }
 
   srand(time(NULL));
@@ -528,7 +531,7 @@ int create_table(char *args) {
   int v;
   if (semd == -1) {
       printf("Error: %s\n", strerror(errno));
-      return 0;
+      return 1;
   }
 
   // Set semaphore value
@@ -537,7 +540,7 @@ int create_table(char *args) {
   v = semctl(semd, 0, SETVAL, us);
   if (v == -1) {
     printf("Error: %s\n", strerror(errno));
-    return 0;
+    return 1;
   }
   else printf("Created semaphore with key '%d' successfully!\n", key);
 
@@ -545,14 +548,14 @@ int create_table(char *args) {
   int fd = open("./sem", O_RDONLY | O_CREAT, 0700);
   if (fd == -1) {
     printf("Error when opening semaphore file: %s\n", strerror(errno));
-    return 0;
+    return 1;
   }
   
   // Check if file is blank
   struct stat stat_record;
   if (fstat(fd, &stat_record) == -1) {
     printf("Error when checking semaphore file: %s\n", strerror(errno));
-    return 0;
+    return 1;
   }
   
   // Initialize vectors 
@@ -681,7 +684,7 @@ int drop_table(char *args) {
 
   if (remove(file) == -1) {
     printf("Removing table '%s' failed: %s\n\n", table_name, strerror(errno));
-    return 0;
+    return 1;
   }
   printf("Table '%s' dropped successfully!\n\n", table_name);
 
@@ -710,7 +713,7 @@ int global_parser(char *input) {
   }
   else {
     printf("Invalid command '%s'!\n\n", cmd);
-    return 0;
+    return 1;
   }
 
   return 0;

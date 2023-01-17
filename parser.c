@@ -429,17 +429,53 @@ int table_parser(char *table_name, char *input, int key) {
     return -1;
   }
   else if (!strcmp(cmd, "PRINT")) {
-    table = read_table(table_name);
-    print_table(table);
-    printf("\n");
-    
-    // Up by 1
-    sb.sem_op = 1;
-    if (semop(semd, &sb, 1) == -1) {
-      printf("Error when performing an atomic operation: %s\n", strerror(errno));
+    if (!input) {
+      printf("Error: Specify target of print: SCHEMA or TABLE!\n");
+      
+      // Up by 1
+      sb.sem_op = 1;
+      if (semop(semd, &sb, 1) == -1) {
+        printf("Error when performing an atomic operation: %s\n", strerror(errno));
+        return 1;
+      } 
       return 1;
-    } 
-    return 0;
+    }
+    else if (!strcmp(input, "SCHEMA")) {
+      table = read_table(table_name);
+      print_schema(table->schm);
+      printf("\n");
+
+      // Up by 1
+      sb.sem_op = 1;
+      if (semop(semd, &sb, 1) == -1) {
+        printf("Error when performing an atomic operation: %s\n", strerror(errno));
+        return 1;
+      } 
+      return 0;
+    }
+    else if (!strcmp(input, "TABLE")) {
+      table = read_table(table_name);
+      print_table(table);
+      printf("\n");
+      
+      // Up by 1
+      sb.sem_op = 1;
+      if (semop(semd, &sb, 1) == -1) {
+        printf("Error when performing an atomic operation: %s\n", strerror(errno));
+        return 1;
+      } 
+      return 0;
+    }
+    else {
+      printf("Error: Unknown PRINT argument.\n");
+      // Up by 1
+      sb.sem_op = 1;
+      if (semop(semd, &sb, 1) == -1) {
+        printf("Error when performing an atomic operation: %s\n", strerror(errno));
+        return 1;
+      } 
+      return 1;
+    }
   }
 
   // Down by SEM_MAX - 1
@@ -472,8 +508,8 @@ int table_parser(char *table_name, char *input, int key) {
   }
   else if (!strcmp(cmd, "DELCOL")) { // TODO: Implement DELCOL
     checkInput(input);
-    // del_col_cmd(table, input);
-    printf("Not functional yet. Only works with integer tables because of memmove issue. Sorry!\n");
+    printf("Only works with integer tables because of memmove issue. Proceed with caution!\n");
+    del_col_cmd(table, input);
   }
   // else if (!strcmp(cmd, "QUERY")) { // TODO: Implement QUERY
   //   checkInput(input);

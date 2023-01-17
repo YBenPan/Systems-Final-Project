@@ -69,14 +69,16 @@ void recompute_rowbytesize(struct schema * schm){
 }
 
 void print_schema(struct schema * schm){
-  printf("SCHEMA: colcount: %d, rowbytesize: [", schm->colcount);
+  printf("SCHEMA:\n");
+  printf("colcount: %d\n", schm->colcount);
+  printf("rowbytesize: [");
   for(int i = 0; i <= schm->colcount; ++i){
     if(i != 0){
       printf(", ");
     }
     printf("%d", schm->rowbytesize[i]);
   }
-  printf("], datatypes: [");
+  printf("]\ndatatypes: [");
   for(int i = 0; i < schm->colcount; ++i){
     if(i != 0){
       printf(", ");

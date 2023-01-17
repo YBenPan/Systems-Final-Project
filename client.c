@@ -26,6 +26,7 @@ static void sighandler(int signo){
   if(signo == SIGINT){
     // clean up client
     send_message_to_server(-1, "TERMINATE");
+    exit(0);
   }
 }
 
@@ -55,9 +56,16 @@ int main(int argc, char * argv[]){
   printf("CLIENT: Established connection with server!\n");
   send_message_to_server(socket_fd, NULL);
   while(1){
-    char buff[256];
-    printf("Input command to send to server:\n");
-    fgets(buff, 256, stdin);
+    char buff[MAX_EXCHANGE_LENGTH];
+    int br = read(socket_fd, buff, MAX_EXCHANGE_LENGTH);
+    ERROR_HANDLER(br, " when reading from server");
+    if(br == MAX_EXCHANGE_LENGTH){
+      br--;
+    }
+    buff[br] = '\0';
+    printf("%s", buff);
+    //printf("Input command to send to server:\n");
+    fgets(buff, MAX_EXCHANGE_LENGTH, stdin);
     chop_newline(buff);
     send_message_to_server(socket_fd, buff);
   }

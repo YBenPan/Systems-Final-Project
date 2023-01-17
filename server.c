@@ -10,10 +10,11 @@
 #include "error_handler.h"
 #include "networking.h"
 #include "vector.h"
+#include "parser.h"
 
 struct intvector * cleanup_vec_process(char cleanup){
   static struct intvector *v = NULL;
-  printf("%p\n", v);
+  //printf("%p\n", v);
   if(cleanup){
     if(!v){
       exit(0);
@@ -30,7 +31,7 @@ struct intvector * cleanup_vec_process(char cleanup){
     // initing
     //printf("debug\n");
     v = init_intvector();
-    printf("%p\n", v);
+    //printf("%p\n", v);
   }
   return v;
 }
@@ -44,7 +45,20 @@ static void sighandler(int signo){
 
 void server_process(int client_fd){
   while(1){
-    // SERVER DO SOME STUFF HERE
+    printf("Input command to send to server:\n");
+    char buff[MAX_EXCHANGE_LENGTH];
+    read(client_fd, buff, MAX_EXCHANGE_LENGTH);
+    global_parser(buff);
+    /*
+    char buff[MAX_EXCHANGE_LENGTH];
+    read(client_fd, buff, MAX_EXCHANGE_LENGTH);
+    char *output_buff = NULL;
+    
+    do_parse_client(buff, &output_buff);
+    strncpy(buff, *output_buff, MAX_EXCHANGE_LENGTH - 1);
+    buff[MAX_EXCHANGE_LENGTH-1] = '\0';
+    write(client_fd, buff, strlen(buff) + 1);
+    */
   }
 }
 
@@ -53,6 +67,8 @@ void fork_processing_server(struct intvector *v, int client_fd){
   if(fork_res == 0){
     printf("SERVER: Forked new child server with PID %d to deal with new client!\n", getpid());
     v->size = 0;
+    dup2(client_fd, STDOUT_FILENO);
+    dup2(client_fd, STDIN_FILENO);
     server_process(client_fd);
   } else {
     // og server, add pid to it

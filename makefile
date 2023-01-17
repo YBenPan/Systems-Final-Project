@@ -8,16 +8,16 @@ server: serverprog
 client: clientprog
 	./clientprog $(ARGS)
 
-serverprog: server.o vector.o
-	gcc $(CFLAGS) -o serverprog server.o vector.o $(LDFLAGS)
+serverprog: server.o parser.o table.o vector.o file_io.o schema.o datatypes.o strcmds.o
+	gcc $(CFLAGS) -o serverprog server.o parser.o table.o vector.o file_io.o schema.o datatypes.o strcmds.o $(LDFLAGS)
 
 clientprog: client.o strcmds.o
 	gcc $(CFLAGS) -o clientprog client.o strcmds.o $(LDFLAGS)
 
-server.o: server.c networking.h error_handler.h vector.h
+server.o: server.c networking.h error_handler.h vector.h parser.h
 	gcc -c $(CFLAGS) server.c
 
-client.o: client.c networking.h error_handler.h parser.h
+client.o: client.c networking.h error_handler.h strcmds.h
 	gcc -c $(CFLAGS) client.c
 
 start: main

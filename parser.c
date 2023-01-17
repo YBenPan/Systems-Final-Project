@@ -412,7 +412,7 @@ int create_table(char *args) {
     }
     col_names[col_cnt] = malloc((strlen(col_name) + 1) * sizeof(char));
     strcpy(col_names[col_cnt++], col_name);
-    printf("%s\n", col_name);
+    //printf("%s\n", col_name);
   }
 
   printf("Input schema (data types) for each column, separated by spaces. You must have as many data types as you have columns. Allowed data types include INT, SMALLINT, TINYINT, LONG, FLOAT, DOUBLE, CHAR, and TEXT(n), where n is an integer.\n");

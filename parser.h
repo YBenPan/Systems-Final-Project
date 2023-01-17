@@ -6,8 +6,6 @@
 #include "file_io.h"
 #define MAX_CMD_LENGTH 255
 
-void chop_newline(char *s);
-
 int add_row_cmd(struct table * table, char *args);
 
 void table_main(char *table_name);

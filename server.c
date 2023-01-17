@@ -12,7 +12,7 @@
 #include "vector.h"
 
 struct intvector * cleanup_vec_process(char cleanup){
-  struct intvector *v = NULL;
+  static struct intvector *v = NULL;
   printf("%p\n", v);
   if(cleanup){
     if(!v){

@@ -18,6 +18,7 @@
 #include "file_io.h"
 #include "schema.h"
 #include "datatypes.h"
+#include "strcmds.h"
 
 union semun {
     int              val;    /* Value for SETVAL */
@@ -26,12 +27,6 @@ union semun {
     struct seminfo  *__buf;  /* Buffer for IPC_INFO */
                              /* (Linux-specific) */
   };
-
-void chop_newline(char *s) {
-  size_t ln = strlen(s) - 1;
-  if (*s && s[ln] == '\n') 
-    s[ln] = '\0';
-}
 
 int add_row_cmd(struct table * table, char *args) {  
   //printf("table data size: %d\n", table->data->size);

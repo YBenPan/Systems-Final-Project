@@ -6,7 +6,17 @@
 #include "file_io.h"
 #define MAX_CMD_LENGTH 255
 
-void chop_newline(char *s);
+#define checkInput(input) {if (!(input)) { printf("Error: argument not supplied!\n\n"); return 0; }}
+
+#define readMacro(buff, maxlen) {\
+	if(1){\
+		int readMacro_rb = read(STDIN_FILENO, (buff), (maxlen));\
+		if(readMacro_rb == (maxlen)){\
+			readMacro_rb--;\
+		}\
+		(buff)[readMacro_rb] = '\0';\
+	}\
+}
 
 int add_row_cmd(struct table * table, char *args);
 

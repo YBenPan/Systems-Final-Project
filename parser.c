@@ -18,22 +18,15 @@
 #include "file_io.h"
 #include "schema.h"
 #include "datatypes.h"
+#include "strcmds.h"
 
-#define checkInput(input) {if (!input) { printf("Error: argument not supplied!\n\n"); return 1; }}
-
-// union semun {
-//    int              val;    /* Value for SETVAL */
-//    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
-//    unsigned short  *array;  /* Array for GETALL, SETALL */
-//    struct seminfo  *__buf;  /* Buffer for IPC_INFO */
-//                             /* (Linux-specific) */
-//  };
-
-void chop_newline(char *s) {
-  size_t ln = strlen(s) - 1;
-  if (*s && s[ln] == '\n') 
-    s[ln] = '\0';
-}
+union semun {
+    int              val;    /* Value for SETVAL */
+    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+    unsigned short  *array;  /* Array for GETALL, SETALL */
+    struct seminfo  *__buf;  /* Buffer for IPC_INFO */
+                             /* (Linux-specific) */
+  };
 
 int add_row_cmd(struct table * table, char *args) {  
   //printf("table data size: %d\n", table->data->size);
@@ -188,7 +181,8 @@ int add_col_cmd(struct table * table, char *args) {
 
   printf("Input type of entries in the new column:\n");
   char input[MAX_CMD_LENGTH];
-  fgets(input, MAX_CMD_LENGTH, stdin);
+  //fgets(input, MAX_CMD_LENGTH, stdin);
+  readMacro(input, MAX_CMD_LENGTH);
   chop_newline(input);
 
   //printf("table data size: %d\n", table->data->size);
@@ -201,7 +195,8 @@ int add_col_cmd(struct table * table, char *args) {
 
   printf("Input default entry for each element in new column:\n");
   char input2[MAX_CMD_LENGTH];
-  fgets(input2, MAX_CMD_LENGTH, stdin);
+  //fgets(input2, MAX_CMD_LENGTH, stdin);
+  readMacro(input2, MAX_CMD_LENGTH);
   chop_newline(input2);
 
   char *new_data_buff = parse_string_to_data(input2, new_data_type);
@@ -388,7 +383,8 @@ void table_main(char *table_name) {
   while (1) {
     // Prompt for user input
     printf("Input table command:\n");
-    fgets(input, MAX_CMD_LENGTH, stdin);
+    //fgets(input, MAX_CMD_LENGTH, stdin);
+    readMacro(input, MAX_CMD_LENGTH);
     chop_newline(input);
     
     int r = table_parser(table_name, input, key);
@@ -583,8 +579,12 @@ int create_table(char *args) {
   // table->column_names -> char (*col_names)[64] -> pointer (dynamic array) to 64-sized fixed-length char arrays
   char *col_input = malloc(MAX_CMD_LENGTH);
   printf("Input column names, separated by space:\n");
-  fgets(col_input, MAX_CMD_LENGTH, stdin);
+  //fgets(col_input, MAX_CMD_LENGTH, stdin);
+  readMacro(col_input, MAX_CMD_LENGTH);
+  //printf("DEBUG-1:\n");
   chop_newline(col_input);
+
+  //printf("DEBUG0: col_input =%s\n", col_input);
 
   // Parse the column names
   int col_cnt = 0;
@@ -595,14 +595,18 @@ int create_table(char *args) {
     }
     col_names[col_cnt] = malloc((strlen(col_name) + 1) * sizeof(char));
     strcpy(col_names[col_cnt++], col_name);
-    printf("%s\n", col_name);
+    //printf("%s\n", col_name);
   }
 
-  printf("Input schema (data types) for each column, separated by spaces. You must have as many data types as you have columns. Allowed data types include INT, SMALLINT, TINYINT, LONG, FLOAT, DOUBLE, CHAR, and TEXT(n), where n is an integer.\n");
+  printf("Input schema (data types) for each column, separated by spaces. You must have as many data types as you have columns.\n");
+  printf("Allowed data types include INT, SMALLINT, TINYINT, LONG, FLOAT, DOUBLE, CHAR, and TEXT(n), where n is an integer.\n");
   col_input = malloc(MAX_CMD_LENGTH);
-  fgets(col_input, MAX_CMD_LENGTH, stdin);
+  //fgets(col_input, MAX_CMD_LENGTH, stdin);
   //printf("DEBUG2\n");
+  readMacro(col_input, MAX_CMD_LENGTH);
+  //printf("DEBUG1: col_input =%s\n", col_input);
   chop_newline(col_input);
+  //printf("DEBUG2: col_input =%s\n", col_input);
   //printf("DEBUG\n");
   struct schema * schema = init_schema_from_text(col_cnt, col_input);
   //printf("DEBUG3\n");
@@ -820,6 +824,9 @@ int global_parser(char *input) {
   else if (!strcmp(cmd, "DROP")) {
     checkInput(input);
     drop_table(input);
+  }
+  else if (!strcmp(cmd, "TERMINATE")){
+    exit(0);
   }
   else {
     printf("Invalid command '%s'!\n\n", cmd);

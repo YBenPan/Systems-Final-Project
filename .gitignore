@@ -39,6 +39,8 @@ tabledebug
 parserdebug
 datatypedebug
 main
+serverprog
+clientprog
 
 # Debug files
 *.dSYM/

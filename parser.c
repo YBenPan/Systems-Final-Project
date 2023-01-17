@@ -1,10 +1,15 @@
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "parser.h"
@@ -13,6 +18,14 @@
 #include "file_io.h"
 #include "schema.h"
 #include "datatypes.h"
+
+// union semun {
+//    int              val;    /* Value for SETVAL */
+//    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+//    unsigned short  *array;  /* Array for GETALL, SETALL */
+//    struct seminfo  *__buf;  /* Buffer for IPC_INFO */
+//                             /* (Linux-specific) */
+//  };
 
 void chop_newline(char *s) {
   size_t ln = strlen(s) - 1;
@@ -63,6 +76,8 @@ int add_row_cmd(struct table * table, char *args) {
   // Write to table
   write_table(table);
 
+  sleep(3); // To test semaphores
+
   // TODO: Append to table instead of overwriting. Not working.
   // char * tablefilename = calloc(MAXIMUM_CHAR_COUNT_TABLE_NAME+8, sizeof(char));
   // strncpy(tablefilename, table->name, MAXIMUM_CHAR_COUNT_TABLE_NAME);
@@ -84,6 +99,8 @@ int add_row_cmd(struct table * table, char *args) {
   // print_table(tmp_table);
 
   printf("Row added successfully to table '%s'!\n\n", table->name);
+  free(row);
+  free(row_item);
 
   return 0;
 }
@@ -215,47 +232,95 @@ int add_col_cmd(struct table * table, char *args) {
   return 0;
 }
 
-void table_main(struct table * table) {
+void table_main(char *table_name) {
   char *input = malloc(MAX_CMD_LENGTH);
-  printf("Opened table '%s'. Entering table-specific shell...\n\n", table->name);
+  printf("Opened table '%s'. Entering table-specific shell...\n\n", table_name);
+  // Semaphores start here
+  int vector_size = 0, key = -1;
+  int fd = open("./sem", O_RDONLY);
+  read(fd, &vector_size, sizeof(int));
+
+  // Read vectors from file
+  for (int i = 0; i < vector_size; i++) {
+    int new_table_name_size, new_semaphore_key;
+    read(fd, &new_table_name_size, sizeof(int));
+    char *new_table_name = malloc(new_table_name_size);
+    read(fd, new_table_name, new_table_name_size);
+    read(fd, &new_semaphore_key, sizeof(int));
+    if (!strcmp(table_name, new_table_name)) { // Found semaphore key
+      key = new_semaphore_key;
+      break;
+    }
+  }
+  if (key == -1) {
+    printf("Error: Semaphore key of table '%s' not found in the key-name pairing file!\n", table_name);
+    exit(EXIT_FAILURE);
+  }
   
   while (1) {
     // Prompt for user input
     printf("Input table command:\n");
     fgets(input, MAX_CMD_LENGTH, stdin);
     chop_newline(input);
-
-    int r = table_parser(table, input);
+    
+    int r = table_parser(table_name, input, key);
     if (r == -1) {
       printf("Table connection exiting. Back to global shell...\n\n");
       break;
     }
   }
+  free(input);
 }
 
-int table_parser(struct table * table, char *input) {
+int table_parser(char *table_name, char *input, int key) {
+  
+  struct table * table;
 
-  // Get the command
+  int semd = semget(key, 1, 0);
+  // int v = semctl(semd, 0, GETVAL, 0);
+  // printf("%d\n", v);
+
+  struct sembuf sb;
+  sb.sem_num = 0; 
+  sb.sem_flg = SEM_UNDO;
+  // Down by 1
+  sb.sem_op = -1;
+  if (semop(semd, &sb, 1) == -1) {
+    printf("Error when performing an atomic operation: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  } 
+
   char *cmd = strsep(&input, " ");
-
   // Router for commands not requiring an argument
   if (!strcmp(cmd, "EXIT")) {
-    free(cmd);
+    // free(cmd);
     return -1;
   }
   else if (!strcmp(cmd, "PRINT")) {
+    table = read_table(table_name);
     print_table(table);
     printf("\n");
-    return 0;
-  }
-  else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
+    
+    // Up by 1
+    sb.sem_op = 1;
+    if (semop(semd, &sb, 1) == -1) {
+      printf("Error when performing an atomic operation: %s\n", strerror(errno));
+      exit(EXIT_FAILURE);
+    } 
     return 0;
   }
   else if (!input) {
     printf("Error: argument not supplied!\n\n");
     exit(EXIT_FAILURE);
   }
-  
+
+  // Down by SEM_MAX - 1
+  sb.sem_op = -(_POSIX_SEM_VALUE_MAX - 1);
+  if (semop(semd, &sb, 1) == -1) {
+    printf("Error when performing an atomic operation: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  table = read_table(table_name);
   // Router for commands requiring an argument
   if (!strcmp(cmd, "ADDROW")) {
     add_row_cmd(table, input);
@@ -278,11 +343,26 @@ int table_parser(struct table * table, char *input) {
   else if (!strcmp(cmd, "QUERY")) { // TODO: Implement QUERY
 
   }
+  else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
+    return 0;
+  }
   else {
     // TODO: Ask user to try again instead, within SELECT
     printf("Invalid command '%s'!\n\n", cmd);
     exit(EXIT_FAILURE);
   }
+
+  sb.sem_op = _POSIX_SEM_VALUE_MAX;
+  if (semop(semd, &sb, 1) == -1) {
+    printf("Error when performing an atomic operation: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  // v = semctl(semd, 0, GETVAL, 0);
+  // printf("%d\n", v);
+
+  free(table);
+
   return 0;
 }
 
@@ -296,10 +376,10 @@ int select_table(char *args) {
   // printf("%s\n", file);
 
   // Open table
-  struct table * table = read_table(table_name);
-  table_main(table);
+  table_main(table_name);
   
   // TODO: response after table_parser
+
   return 0;
 }
 
@@ -368,14 +448,109 @@ int create_table(char *args) {
   //printf("DEBUG5\n");
   // Write table
   if (!write_table(table)) {
-    free(table);
-    printf("Table '%s' created successfully!\n\n", table_name);
-    return 0;
+    // free(table);
   }
   else {
     printf("Creation of table '%s' failed: %s\n\n", table_name, strerror(errno));
     exit(EXIT_FAILURE);
   }
+
+  srand(time(NULL));
+
+  // TODO: keep generating key until it's unique
+  int key = rand() % 100000;
+
+  // Create semaphore
+  int semd = semget(key, 1, IPC_CREAT | IPC_EXCL | 0644);
+  int v;
+  if (semd == -1) {
+      printf("Error: %s\n", strerror(errno));
+      exit(EXIT_FAILURE);
+  }
+
+  // Set semaphore value
+  union semun us;
+  us.val = _POSIX_SEM_VALUE_MAX;
+  v = semctl(semd, 0, SETVAL, us);
+  if (v == -1) {
+    printf("Error: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  else printf("Created semaphore with key '%d' successfully!\n", key);
+
+  // Open semaphore file
+  int fd = open("./sem", O_RDONLY | O_CREAT, 0700);
+  if (fd == -1) {
+    printf("Error when opening semaphore file: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  
+  // Check if file is blank
+  struct stat stat_record;
+  if (fstat(fd, &stat_record) == -1) {
+    printf("Error when checking semaphore file: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  
+  // Initialize vectors 
+  struct vector * table_names;
+  struct intvector * semaphore_keys;
+  int vector_size = 0;
+
+  if (stat_record.st_size < 1) {
+    table_names = init_vector();
+    semaphore_keys = init_intvector();
+  }
+  else { // Nonempty file
+    read(fd, &vector_size, sizeof(int));
+    table_names = init_vector();
+    semaphore_keys = init_intvector();
+
+    // Read vectors from file
+    for (int i = 0; i < vector_size; i++) {
+      int new_table_name_size, new_semaphore_key;
+      read(fd, &new_table_name_size, sizeof(int));
+      char *new_table_name = malloc(new_table_name_size);
+      read(fd, new_table_name, new_table_name_size);
+      read(fd, &new_semaphore_key, sizeof(int));
+      add_vector(table_names, new_table_name);
+      add_intvector(semaphore_keys, new_semaphore_key);
+    }
+    
+  }
+    
+  // Add new table's name and semaphore key to the vectors
+  add_vector(table_names, table_name);
+  add_intvector(semaphore_keys, key);
+  vector_size++;
+
+  // printf("---\n");
+  // printf("%d\n", vector_size);
+  // for (int i = 0; i < vector_size; i++) {
+  //   printf("%s: %d\n", table_names->values[i], semaphore_keys->values[i]);
+  // }
+  // printf("---\n");
+
+  fd = open("./sem", O_WRONLY | O_TRUNC, 0700);
+
+  // First integer identify the number of tables
+  write(fd, &vector_size, sizeof(int));
+
+  for (int i = 0; i < vector_size; i++) {
+    int strl = strlen(table_names->values[i]);
+    write(fd, &strl, sizeof(int)); // Length of table_name string
+    write(fd, table_names->values[i], strl);
+    write(fd, &semaphore_keys->values[i], sizeof(int));
+  }
+
+  printf("Semaphore keys file updated!\n");
+  close(fd);
+  printf("Table '%s' created successfully!\n\n", table_name);
+
+  free(table_names);
+  free(semaphore_keys);
+  
+  return 0;
 }
 
 int drop_table(char *args) {
@@ -389,14 +564,65 @@ int drop_table(char *args) {
   strcat(file, file_ext);
   // printf("%s\n", file);
 
+  // Open table_name-semaphore_key pairing file
+  int fd = open("./sem", O_RDONLY, 0700);
+  struct vector * table_names;
+  struct intvector * semaphore_keys;
+  int vector_size = 0;
+
+  read(fd, &vector_size, sizeof(int));
+  // printf("Vector size: %d\n", vector_size);
+  table_names = init_vector();
+  semaphore_keys = init_intvector();
+
+  // Read vectors from file
+  int tmp = vector_size;
+  for (int i = 0; i < tmp; i++) {
+    int new_table_name_size, new_semaphore_key;
+    read(fd, &new_table_name_size, sizeof(int));
+    char *new_table_name = malloc(new_table_name_size);
+    read(fd, new_table_name, new_table_name_size);
+    read(fd, &new_semaphore_key, sizeof(int));
+
+    // Skip the dropped table
+    if (strcmp(table_name, new_table_name)) {
+      add_vector(table_names, new_table_name);
+      add_intvector(semaphore_keys, new_semaphore_key);
+    }
+    else {
+      vector_size--;
+    }
+  }
+
+  // printf("---\n");
+  // printf("%d\n", vector_size);
+  // for (int i = 0; i < vector_size; i++) {
+  //   printf("%s: %d\n", table_names->values[i], semaphore_keys->values[i]);
+  // }
+  // printf("---\n");
+
+  fd = open("./sem", O_WRONLY | O_TRUNC, 0700);
+
+  // First integer identify the number of tables
+  write(fd, &vector_size, sizeof(int));
+
+  for (int i = 0; i < vector_size; i++) {
+    int strl = strlen(table_names->values[i]);
+    write(fd, &strl, sizeof(int)); // Length of table_name string
+    write(fd, table_names->values[i], strl);
+    write(fd, &semaphore_keys->values[i], sizeof(int));
+  }
+
+  printf("Semaphore keys file updated!\n");
+  close(fd);
+
   if (remove(file) == -1) {
-    printf("Dropping table '%s' failed: %s\n\n", table_name, strerror(errno));
+    printf("Removing table '%s' failed: %s\n\n", table_name, strerror(errno));
     exit(EXIT_FAILURE);
   }
-  else {
-    printf("Table '%s' dropped successfully!\n\n", table_name);
-    return 0;
-  }
+  printf("Table '%s' dropped successfully!\n\n", table_name);
+
+  return 0;
 }
 
 int global_parser(char *input) {
@@ -405,7 +631,6 @@ int global_parser(char *input) {
   char *cmd = strsep(&input, " ");
 
   if (!strcmp(cmd, "EXIT")) {
-    free(cmd);
     return -1;
   }
 

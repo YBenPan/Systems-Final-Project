@@ -33,3 +33,6 @@ January 15:
 - 7:18PM: Finished retrofitting core table functionality to use schema, rewrote tabledebug.c and file IO code to support new formatted tables (and file IO can also read in old formatted tables and write them in the new format) - Frank
 - 7:53PM: Worked to merge parser features to support new schema, ADDROW and CREATE now work again - Frank
 - 8:39PM: Finally merged parser features with new table style, got ADDCOL working - Frank
+
+January 16:
+- 1:23AM: Finished semaphores (mostly) - Ben

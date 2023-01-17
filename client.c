@@ -37,8 +37,14 @@ int client_socket_setup(char * targetaddress){
   struct addrinfo * res;
   hints->ai_family = AF_INET;
   hints->ai_socktype = SOCK_STREAM;
-  getaddrinfo(targetaddress, NETWORKING_PORT, hints, &res);
+  int gai_errcode = getaddrinfo(targetaddress, NETWORKING_PORT, hints, &res);
+  //printf("test\n");
+  if(gai_errcode){
+    printf("ERROR occurred in getaddrinfo: %s\n", gai_strerror(gai_errcode));
+    exit(0);
+  }
   int socket_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+  //printf("test2\n");
   ERROR_HANDLER(socket_fd, " when trying to establish socket_fd");
   ERROR_HANDLER(connect(socket_fd, res->ai_addr, res->ai_addrlen), " when trying to connect to socket");
   return socket_fd;
@@ -52,6 +58,7 @@ int main(int argc, char * argv[]){
   } else {
     targetaddr = argv[1];
   }
+  //printf("TARGETADDR: %s\n", targetaddr);
   int socket_fd = client_socket_setup(targetaddr);
   printf("CLIENT: Established connection with server!\n");
   send_message_to_server(socket_fd, NULL);

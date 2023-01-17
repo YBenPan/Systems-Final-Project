@@ -40,3 +40,4 @@ January 16:
 
 January 17:
 - 12:26 AM: Got server-client system to (mostly) work with parser, with a few bugs unfortunately (notably sometimes buffers just seem to get out of sync?) - Frank
+- 12:56 AM: Fix input-output order desync error on client-side - Frank

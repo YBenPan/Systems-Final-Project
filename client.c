@@ -57,7 +57,7 @@ int main(int argc, char * argv[]){
   send_message_to_server(socket_fd, NULL);
   while(1){
     char buff[MAX_EXCHANGE_LENGTH];
-    printf("Input command to send to server:\n");
+    //printf("Input command to send to server:\n");
     fgets(buff, MAX_EXCHANGE_LENGTH, stdin);
     //chop_newline(buff);
     send_message_to_server(socket_fd, buff);

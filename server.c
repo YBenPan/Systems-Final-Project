@@ -45,6 +45,7 @@ static void sighandler(int signo){
 
 void server_process(int client_fd){
   while(1){
+    printf("Input command to send to server\n");
     char buff[MAX_EXCHANGE_LENGTH];
     read(client_fd, buff, MAX_EXCHANGE_LENGTH);
     global_parser(buff);

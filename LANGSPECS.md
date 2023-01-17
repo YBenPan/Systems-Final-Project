@@ -1,9 +1,5 @@
 # Language Specifications
 
-Similar to SQL for now. Will update later to a more user-friendly version. 
-
-Note: the commands below are reserved keywords. Tables / files / rows / columns are banned from using them. 
-
 ## Global Commands (Tier 1)
 
 ### SELECT
@@ -25,6 +21,12 @@ DROP table_name
 ```
 
 ## Table Commands (Tier 2)
+
+### PRINT
+```
+PRINT SCHEMA
+PRINT TABLE
+```
 
 ### ADDROW
 

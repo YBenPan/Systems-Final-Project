@@ -322,7 +322,7 @@ int del_col_cmd(struct table * table, char *args) {
     int len = get_datatype_size(currow->schm->datatypes->values[col_index]);
     char *start = currow->data + offset;
     char *end = currow->data + offset + len;
-    memmove(start, start + len, str(end) + 1); // DOES NOT WORK IF MOVING CHAR OR TEXT
+    memmove(start, start + len, strlen(end) + 1); // DOES NOT WORK IF MOVING CHAR OR TEXT
 
     // free(&currow->schm->rowbytesize[currow->schm->colcount - 1]);
     // delete_vector(currow->schm->datatypes, col_index);
@@ -397,7 +397,6 @@ void table_main(char *table_name) {
       break;
     }
   }
-  free(input);
 }
 
 int table_parser(char *table_name, char *input, int key) {
@@ -421,7 +420,12 @@ int table_parser(char *table_name, char *input, int key) {
   char *cmd = strsep(&input, " ");
   // Router for commands not requiring an argument
   if (!strcmp(cmd, "EXIT")) {
-    // free(cmd);
+    // Up by 1
+    sb.sem_op = 1;
+    if (semop(semd, &sb, 1) == -1) {
+      printf("Error when performing an atomic operation: %s\n", strerror(errno));
+      return 1;
+    } 
     return -1;
   }
   else if (!strcmp(cmd, "PRINT")) {
@@ -469,17 +473,22 @@ int table_parser(char *table_name, char *input, int key) {
   else if (!strcmp(cmd, "DELCOL")) { // TODO: Implement DELCOL
     checkInput(input);
     // del_col_cmd(table, input);
-    printf("Not functional. Sorry!\n");
+    printf("Not functional yet. Only works with integer tables because of memmove issue. Sorry!\n");
   }
-  else if (!strcmp(cmd, "QUERY")) { // TODO: Implement QUERY
-    checkInput(input);
-  }
+  // else if (!strcmp(cmd, "QUERY")) { // TODO: Implement QUERY
+  //   checkInput(input);
+  // }
   // else if (!strcmp(cmd, "SORT")) {
   //   checkInput(input);
   //   return 0;
   // }
   else {
     printf("Invalid command '%s'!\n\n", cmd);
+    sb.sem_op = _POSIX_SEM_VALUE_MAX;
+    if (semop(semd, &sb, 1) == -1) {
+      printf("Error when performing an atomic operation: %s\n", strerror(errno));
+      return 1;
+    }
     return 1;
   }
 

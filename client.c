@@ -26,6 +26,7 @@ static void sighandler(int signo){
   if(signo == SIGINT){
     // clean up client
     send_message_to_server(-1, "TERMINATE");
+    exit(0);
   }
 }
 
@@ -61,6 +62,6 @@ int main(int argc, char * argv[]){
     chop_newline(buff);
     send_message_to_server(socket_fd, buff);
     read(socket_fd, buff, MAX_EXCHANGE_LENGTH);
-    printf(buff);
+    printf("%s", buff);
   }
 }

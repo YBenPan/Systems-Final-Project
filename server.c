@@ -14,7 +14,7 @@
 
 struct intvector * cleanup_vec_process(char cleanup){
   static struct intvector *v = NULL;
-  printf("%p\n", v);
+  //printf("%p\n", v);
   if(cleanup){
     if(!v){
       exit(0);
@@ -31,7 +31,7 @@ struct intvector * cleanup_vec_process(char cleanup){
     // initing
     //printf("debug\n");
     v = init_intvector();
-    printf("%p\n", v);
+    //printf("%p\n", v);
   }
   return v;
 }

@@ -25,3 +25,10 @@
     Read, read: No block.
 - [ ] Create function to read from key-name pair file
 - [X] Semaphore value = INTMAX. Read -= 1, Write -= INTMAX
+
+## Commands
+- [X] Print column data types
+- [X] Random output of col names after commands
+- [X] Update LANGSPECS
+- [X] Fix return values for a lot of functions
+- [X] Fix issue where broken commands like 'exit' doesn't really exist and gets stuck after inputting them twice consecutively

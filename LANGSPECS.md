@@ -1,9 +1,5 @@
 # Language Specifications
 
-Similar to SQL for now. Will update later to a more user-friendly version. 
-
-Note: the commands below are reserved keywords. Tables / files / rows / columns are banned from using them. 
-
 ## Global Commands (Tier 1)
 
 ### SELECT
@@ -26,30 +22,30 @@ DROP table_name
 
 ## Table Commands (Tier 2)
 
+### PRINT
+```
+PRINT SCHEMA
+PRINT TABLE
+```
+
 ### ADDROW
 
 ```
-ADDROW (value_1,value_2,value_3)
+ADDROW (value_1 value_2 value_3)
 ```
 
-### DELROW: ???
+### DELROW:
 
-### SETROW: ???
+```
+DELROW row_index
+```
 
-### ADDCOL: ???
+### SETROW: 
+```
+SETROW row_index (value_1 value_2 value_3)
+```
+
+### ADDCOL:
 ```
 ADDCOL col_name
 ```
-
-### DELCOL: ???
-```
-DELCOL col_name
-```
-
-### QUERY: ???
-
-### SORT
-```
-SORT
-```
-

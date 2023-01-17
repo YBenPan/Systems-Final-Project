@@ -36,8 +36,12 @@ January 15:
 
 January 16:
 - 1:23AM: Finished semaphores (mostly) - Ben
+- 9:44PM: Implement DELROW - Ben
 - 9:59PM: Set up a basic server-client structure, still needs to be intergrated with parser - Frank
+- 10:50PM: Implement SETROW - Ben
 
 January 17:
-- 12:26 AM: Got server-client system to (mostly) work with parser, with a few bugs unfortunately (notably sometimes buffers just seem to get out of sync?) - Frank
-- 12:56 AM: Fix input-output order desync error on client-side - Frank
+- 12:26AM: Got server-client system to (mostly) work with parser, with a few bugs unfortunately (notably sometimes buffers just seem to get out of sync?) - Frank
+- 12:28AM: Tried implementing DELCOL. Limited functionality - Ben
+- 12:50AM: Implement PRINT TABLE and PRINT SCHEMA - Ben
+- 12:56AM: Fix input-output order desync error on client-side - Frank

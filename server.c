@@ -17,7 +17,7 @@ int socket_server_setup(){
   hints->ai_socktype = SOCK_STREAM;
   hints->ai_flags = AI_PASSIVE;
   getaddrinfo(NULL, NETWORKING_PORT, hints, &res);
-  int listening_fd = socket(res->ai_family, res->ai_socktype, res->ai_flags);
+  int listening_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
   ERROR_HANDLER(listening_fd, " in socket() when setting up sockets");
   int yes = 1;
   ERROR_HANDLER(setsockopt(listening_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)), " in setsockopt() when setting up sockets");

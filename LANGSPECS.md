@@ -29,27 +29,21 @@ DROP table_name
 ### ADDROW
 
 ```
-ADDROW (value_1,value_2,value_3)
+ADDROW (value_1 value_2 value_3)
 ```
 
-### DELROW: ???
+### DELROW:
 
-### SETROW: ???
+```
+DELROW row_index
+```
 
-### ADDCOL: ???
+### SETROW: 
+```
+SETROW row_index (value_1 value_2 value_3)
+```
+
+### ADDCOL:
 ```
 ADDCOL col_name
 ```
-
-### DELCOL: ???
-```
-DELCOL col_name
-```
-
-### QUERY: ???
-
-### SORT
-```
-SORT
-```
-

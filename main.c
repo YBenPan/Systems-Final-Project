@@ -4,6 +4,7 @@
 #include "vector.h"
 #include "table.h"
 #include "parser.h"
+#include "strcmds.h"
 
 int main() {
   char *input = malloc(MAX_CMD_LENGTH);

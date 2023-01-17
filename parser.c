@@ -19,21 +19,15 @@
 #include "schema.h"
 #include "datatypes.h"
 
-#define checkInput(input) {if (!input) { printf("Error: argument not supplied!\n\n"); return 0; }}
+#include "strcmds.h"
 
-// union semun {
-//    int              val;    /* Value for SETVAL */
-//    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
-//    unsigned short  *array;  /* Array for GETALL, SETALL */
-//    struct seminfo  *__buf;  /* Buffer for IPC_INFO */
-//                             /* (Linux-specific) */
-//  };
-
-void chop_newline(char *s) {
-  size_t ln = strlen(s) - 1;
-  if (*s && s[ln] == '\n') 
-    s[ln] = '\0';
-}
+union semun {
+    int              val;    /* Value for SETVAL */
+    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+    unsigned short  *array;  /* Array for GETALL, SETALL */
+    struct seminfo  *__buf;  /* Buffer for IPC_INFO */
+                             /* (Linux-specific) */
+  };
 
 int add_row_cmd(struct table * table, char *args) {  
   //printf("table data size: %d\n", table->data->size);

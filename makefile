@@ -2,11 +2,29 @@ OBJECTS= vector.o table.o
 CFLAGS= -Wall -Wextra
 LDFLAGS= -lm
 
+server: serverprog
+	./serverprog
+
+client: clientprog
+	./clientprog $(ARGS)
+
+serverprog: server.o vector.o
+	gcc $(CFLAGS) -o serverprog server.o vector.o $(LDFLAGS)
+
+clientprog: client.o strcmds.o
+	gcc $(CFLAGS) -o clientprog client.o strcmds.o $(LDFLAGS)
+
+server.o: server.c networking.h error_handler.h vector.h
+	gcc -c $(CFLAGS) server.c
+
+client.o: client.c networking.h error_handler.h parser.h
+	gcc -c $(CFLAGS) client.c
+
 start: main
 	./main
 
-main: main.o parser.o table.o vector.o file_io.o schema.o datatypes.o
-	gcc $(CFLAGS) -o main main.o parser.o table.o vector.o file_io.o schema.o datatypes.o $(LDFLAGS)
+main: main.o parser.o table.o vector.o file_io.o schema.o datatypes.o strcmds.o
+	gcc $(CFLAGS) -o main main.o parser.o table.o vector.o file_io.o strcmds.o schema.o datatypes.o $(LDFLAGS)
 
 tabledebug: tabledebug.o table.o vector.o file_io.o schema.o datatypes.o
 	gcc $(CFLAGS) -o tabledebug tabledebug.o table.o vector.o file_io.o schema.o datatypes.o $(LDFLAGS)
@@ -14,11 +32,14 @@ tabledebug: tabledebug.o table.o vector.o file_io.o schema.o datatypes.o
 datatypedebug: datatypedebug.o datatypes.o
 	gcc $(CFLAGS) -o datatypedebug datatypedebug.o datatypes.o
 
-main.o: main.c parser.h file_io.h vector.h table.h
+main.o: main.c parser.h file_io.h vector.h table.h strcmds.h
 	gcc -c $(CFLAGS) main.c
 
-parser.o: parser.c parser.h table.h vector.h file_io.h
+parser.o: parser.c parser.h table.h vector.h file_io.h strcmds.h
 	gcc -c $(CFLAGS) parser.c
+
+strcmds.o: strcmds.c strcmds.h
+	gcc -c $(CFLAGS) strcmds.c
 
 datatypedebug.o: datatypedebug.c datatypes.h
 	gcc -c $(CFLAGS) datatypedebug.c

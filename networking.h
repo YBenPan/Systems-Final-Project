@@ -7,4 +7,7 @@
 
 #define MAX_EXCHANGE_LENGTH 256
 
+// this is not printable so this is safe
+#define CLIENT_REQUEST_INPUT_NONCE 0xFF1111
+
 #endif

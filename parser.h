@@ -10,6 +10,7 @@
 
 #define readMacro(buff, maxlen) {\
 	if(1){\
+		send_client_request_input_nonce();\
 		int readMacro_rb = read(STDIN_FILENO, (buff), (maxlen));\
 		if(readMacro_rb == (maxlen)){\
 			readMacro_rb--;\

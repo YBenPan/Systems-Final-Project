@@ -8,13 +8,13 @@ server: serverprog
 client: clientprog
 	./clientprog $(ARGS)
 
-serverprog: server.o parser.o table.o vector.o file_io.o schema.o datatypes.o strcmds.o
-	gcc $(CFLAGS) -o serverprog server.o parser.o table.o vector.o file_io.o schema.o datatypes.o strcmds.o $(LDFLAGS)
+serverprog: server.o parser.o table.o vector.o file_io.o schema.o datatypes.o strcmds.o networking_helper.o
+	gcc $(CFLAGS) -o serverprog server.o parser.o table.o vector.o file_io.o schema.o datatypes.o strcmds.o networking_helper.o $(LDFLAGS)
 
 clientprog: client.o strcmds.o
 	gcc $(CFLAGS) -o clientprog client.o strcmds.o $(LDFLAGS)
 
-server.o: server.c networking.h error_handler.h vector.h parser.h
+server.o: server.c networking.h error_handler.h vector.h parser.h networking_helper.h
 	gcc -c $(CFLAGS) server.c
 
 client.o: client.c networking.h error_handler.h strcmds.h
@@ -32,10 +32,13 @@ tabledebug: tabledebug.o table.o vector.o file_io.o schema.o datatypes.o
 datatypedebug: datatypedebug.o datatypes.o
 	gcc $(CFLAGS) -o datatypedebug datatypedebug.o datatypes.o
 
+networking_helper.o: networking_helper.c networking_helper.h networking.h
+	gcc -c $(CFLAGS) networking_helper.c
+
 main.o: main.c parser.h file_io.h vector.h table.h strcmds.h
 	gcc -c $(CFLAGS) main.c
 
-parser.o: parser.c parser.h table.h vector.h file_io.h strcmds.h
+parser.o: parser.c parser.h table.h vector.h file_io.h strcmds.h networking_helper.h
 	gcc -c $(CFLAGS) parser.c
 
 strcmds.o: strcmds.c strcmds.h

@@ -57,16 +57,22 @@ int main(int argc, char * argv[]){
   send_message_to_server(socket_fd, NULL);
   while(1){
     char buff[MAX_EXCHANGE_LENGTH];
+    //printf("CLIENT: waiting for server\n");
     int br = read(socket_fd, buff, MAX_EXCHANGE_LENGTH);
     ERROR_HANDLER(br, " when reading from server");
-    if(br == MAX_EXCHANGE_LENGTH){
-      br--;
+    int *p = (int *)buff;
+    //printf("CLIENT debug: %x\n", *p);
+    if(*p == CLIENT_REQUEST_INPUT_NONCE){
+      //printf("CLIENT: Server requested input from client.\n");
+      fgets(buff, MAX_EXCHANGE_LENGTH, stdin);
+      chop_newline(buff);
+      send_message_to_server(socket_fd, buff);
+    } else {
+      if(br == MAX_EXCHANGE_LENGTH){
+        br--;
+      }
+      buff[br] = '\0';
+      printf("%s", buff);
     }
-    buff[br] = '\0';
-    printf("%s", buff);
-    //printf("Input command to send to server:\n");
-    fgets(buff, MAX_EXCHANGE_LENGTH, stdin);
-    chop_newline(buff);
-    send_message_to_server(socket_fd, buff);
   }
 }

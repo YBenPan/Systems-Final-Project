@@ -27,4 +27,8 @@
 - [X] Semaphore value = INTMAX. Read -= 1, Write -= INTMAX
 
 ## Commands
+- [ ] Print column data types
 - [ ] Random output of col names after commands
+- [ ] Update LANGSPECS and add help command
+- [ ] Fix return values for a lot of functions
+- [ ] Fix issue where broken commands like 'exit' doesn't really exist and gets stuck after inputting them twice consecutively

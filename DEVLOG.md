@@ -44,3 +44,4 @@ January 17:
 - 12:26AM: Got server-client system to (mostly) work with parser, with a few bugs unfortunately (notably sometimes buffers just seem to get out of sync?) - Frank
 - 12:28AM: Tried implementing DELCOL. Limited functionality - Ben
 - 12:50AM: Implement PRINT TABLE and PRINT SCHEMA - Ben
+- 12:56AM: Fix input-output order desync error on client-side - Frank

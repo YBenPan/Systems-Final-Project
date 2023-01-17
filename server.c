@@ -11,6 +11,7 @@
 #include "networking.h"
 #include "vector.h"
 #include "parser.h"
+#include "networking_helper.h"
 
 struct intvector * cleanup_vec_process(char cleanup){
   static struct intvector *v = NULL;
@@ -46,6 +47,7 @@ static void sighandler(int signo){
 void server_process(int client_fd){
   while(1){
     printf("Input command to send to server:\n");
+    send_client_request_input_nonce();
     char buff[MAX_EXCHANGE_LENGTH];
     read(client_fd, buff, MAX_EXCHANGE_LENGTH);
     global_parser(buff);

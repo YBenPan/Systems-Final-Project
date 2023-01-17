@@ -18,6 +18,7 @@
 #include "file_io.h"
 #include "schema.h"
 #include "datatypes.h"
+#include "networking_helper.h"
 #include "strcmds.h"
 
 union semun {

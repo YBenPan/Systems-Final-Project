@@ -99,8 +99,6 @@ int add_row_cmd(struct table * table, char *args) {
   // print_table(tmp_table);
 
   printf("Row added successfully to table '%s'!\n\n", table->name);
-  free(row);
-  free(row_item);
 
   return 0;
 }

@@ -8,13 +8,13 @@ server: serverprog
 client: clientprog
 	./clientprog
 
-serverprog: server.o
-	gcc $(CFLAGS) -o serverprog server.o $(LDFLAGS)
+serverprog: server.o vector.o
+	gcc $(CFLAGS) -o serverprog server.o vector.o $(LDFLAGS)
 
 clientprog: client.o
 	gcc $(CFLAGS) -o clientprog client.o $(LDFLAGS)
 
-server.o: server.c networking.h error_handler.h
+server.o: server.c networking.h error_handler.h vector.h
 	gcc -c $(CFLAGS) server.c
 
 client.o: client.c networking.h error_handler.h

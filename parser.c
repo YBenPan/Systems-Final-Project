@@ -376,10 +376,10 @@ void table_main(char *table_name) {
       break;
     }
   }
-  if (key == -1) {
-    printf("Error: Semaphore key of table '%s' not found in the key-name pairing file!\n", table_name);
-    return;
-  }
+  // if (key == -1) {
+  //   printf("Error: Semaphore key of table '%s' not found in the key-name pairing file!\n", table_name);
+  //   return;
+  // }
   
   while (1) {
     // Prompt for user input

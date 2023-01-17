@@ -8,7 +8,7 @@
   - [X] Make sure it exits to global shell
   - [ ] Introduce macro for tprintf to customize table-specific shell
 - [ ] Raise error if trying to create table when it already exists
-- [ ] Don't stop the global/table shell if user inputs wrong things
+- [X] Don't stop the global/table shell if user inputs wrong things
 
 ## Semaphores
 - [ ] Vector operations that can be implemented later

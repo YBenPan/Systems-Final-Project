@@ -18,7 +18,7 @@ void resize_vector(struct vector * v, int capacity){
   } else {
     free(v->values);
     printf("ERROR: REALLOC FOR VECTOR FAILED, EXITING");
-    exit(1);
+    return;
   }
 }
 
@@ -70,7 +70,7 @@ void resize_intvector(struct intvector * v, int capacity){
   } else {
     free(v->values);
     printf("ERROR: REALLOC FOR INT VECTOR FAILED, EXITING");
-    exit(1);
+    return;
   }
 }
 

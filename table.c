@@ -12,7 +12,7 @@
 struct table * init_table(char * tablename, char **columnnames, int colcount, struct schema * schm){
   if(schm->colcount != colcount){
     printf("ERROR: init_table called with colcount %d, expected colcount to match schema's %d, exiting!\n", colcount, schm->colcount);
-    exit(1);
+    return 0;
   }
   //printf("DEBUG T0\n");
   struct table * o = calloc(1, sizeof(struct table));
@@ -36,12 +36,12 @@ struct table * init_table(char * tablename, char **columnnames, int colcount, st
 void add_row(struct table * table, struct tablerow * row){
   if(row->schm != table->schm){
     printf("ERROR: Tried to add row to table with schema pointer %p, expected pointer %p, program exiting!\n", row->schm, table->schm);
-    exit(1);
+    return;
   }
 /*
   if(row->size != table->colcount){
     printf("ERROR: Tried to add row to table with size %d, expected colcount %d, program exiting.\n", row->size, table->colcount);
-    exit(1);
+    return;
   }
 */
   add_vector(table->data, row);

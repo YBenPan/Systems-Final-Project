@@ -25,7 +25,7 @@ char write_table(struct table * table){
   int fd = open(tablefilename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
   if(fd == -1){
     printf("Error when attempting to open the table file for writing, exiting: %s\n", strerror(errno));
-    exit(1);
+    return 0;
   }
   int file_version = CURRENT_TABLE_FILE_VERSION;
   // HEADER
@@ -64,14 +64,14 @@ struct table * read_table(char * table_name){
   int fd = open(tablefilename, O_RDONLY);
   if(fd == -1){
     printf("Error when attempting to open the table file for reading, exiting: %s\n", strerror(errno));
-    exit(1);
+    return 0;
   }
   char nonce[5];
   read(fd, nonce, 4);
   nonce[4] = '\0';
   if(strncmp(nonce, "TBLF", 4)){
     printf("ERROR: Encountered invalid table file that does not begin with nonce TBLF, exiting!\n");
-    exit(1);
+    return 0;
   }
   int file_version;
   read(fd, &file_version, sizeof(int));
@@ -152,7 +152,7 @@ struct table * read_table(char * table_name){
     }
   } else {
     printf("ERROR: Encountered non-supported table file version %d, exiting!\n\n", file_version);
-    exit(1);
+    return 0;
   }
   free(tablefilename);
   close(fd);
@@ -185,7 +185,7 @@ char write_table_to_csv(struct table * table, char * output_file){
   int fd = open(output_file, O_CREAT | O_TRUNC | O_WRONLY, 0644);
   if(fd == -1){
     printf("Error when attempting to open the table file for writing, exiting: %s\n\n", strerror(errno));
-    exit(1);
+    return 0;
   }
   char delim_char = CSV_DELIMITER_CHARACTER;
   char newline_char = '\n';

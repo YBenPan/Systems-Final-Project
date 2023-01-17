@@ -13,7 +13,7 @@ struct schema * init_schema(int colcount, struct vector * datatypes){
   o->rowbytesize = NULL;
   if(datatypes->size != colcount){
     printf("ERROR: init_schema called with a datatypes vector of size %d, expected colcount size %d, exiting!\n", datatypes->size, colcount);
-    exit(1);
+    return 0;
   }
   o->datatypes = datatypes;
   recompute_rowbytesize(o);

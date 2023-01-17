@@ -10,7 +10,7 @@
 void print_datatype(struct datatype * dt){
   if(dt->type >= TOTAL_DATATYPE_COUNT){
     printf("ERROR: print_datatype was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
-    exit(1);
+    return;
   }
   static char * datatype_labels[] = DATATYPE_LABELS;
   if(dt == NULL){
@@ -23,7 +23,7 @@ int get_datatype_size(struct datatype * dt){
   static int datatype_sizes[] = DATATYPE_SIZES;
   if(dt->type >= TOTAL_DATATYPE_COUNT){
     printf("ERROR: get_datatype_size was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
-    exit(1);
+    return 0;
   }
   int rv = datatype_sizes[dt->type];
   if(!rv){
@@ -81,7 +81,7 @@ struct datatype * parse_string_to_datatype(char * strinput){
 char * parse_string_to_data(char * strinput, struct datatype * dt){
   if(dt->type >= TOTAL_DATATYPE_COUNT){
     printf("ERROR: parse_string_to_data was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
-    exit(1);
+    return 0;
   }
   char * o = NULL;
   // note for numbers:
@@ -228,7 +228,7 @@ void print_element_from_datatype(char * buff, struct datatype * dt){
 char * print_element_from_datatype_to_string(char * buff, struct datatype * dt){
   if(dt->type >= TOTAL_DATATYPE_COUNT){
     printf("ERROR: print_element_from_datatype_to_string was passed a datatype with type %d, maximum type value cannot exceed %d, exiting!\n", dt->type, TOTAL_DATATYPE_COUNT);
-    exit(1);
+    return 0;
   }
   char * output = calloc(MAX_DATAVALUE_OUTPUT_LENGTH, sizeof(char));
   switch(dt->type){

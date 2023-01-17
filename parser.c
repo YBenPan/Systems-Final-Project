@@ -19,6 +19,8 @@
 #include "schema.h"
 #include "datatypes.h"
 
+#define checkInput(input) {if (!input) { printf("Error: argument not supplied!\n\n"); return 0; }}
+
 // union semun {
 //    int              val;    /* Value for SETVAL */
 //    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
@@ -38,7 +40,7 @@ int add_row_cmd(struct table * table, char *args) {
   // Check syntax "(...)" and remove parentheses
   if (args[0] != '(' || args[strlen(args) - 1] != ')') {
     printf("Syntax Error: Row must be surrounded by parentheses!\n\n");
-    exit(EXIT_FAILURE);
+    return 0;
   }
   strsep(&args, "(");
   args[strlen(args) - 1] = '\0';
@@ -57,8 +59,8 @@ int add_row_cmd(struct table * table, char *args) {
 
   if(row->size != table->colcount){
     printf("Syntax Error: Row must have colcount = %d elements, found %d elements instead, exiting!\n\n", table->colcount, row->size);
-    exit(EXIT_FAILURE);
     free_vector(row);
+    return 0;
   }
 
   // Add row using function in table.c
@@ -67,7 +69,7 @@ int add_row_cmd(struct table * table, char *args) {
 
   if(retval){
     printf("Encountered error in add_row_from_text when trying to add_row, exiting!\n\n");
-    exit(EXIT_FAILURE);
+    return 0;
   }
 
   // Add row using function in table.c
@@ -86,12 +88,12 @@ int add_row_cmd(struct table * table, char *args) {
   // int fd = open(tablefilename, O_WRONLY | O_APPEND);
   // if(fd == -1){
   //   printf("Error when attempting to open '%s' for writing, exiting: %s\n", tablefilename, strerror(errno));
-  //   exit(1);
+  //   return 0;
   // }
   // ssize_t res = write(fd, row->values, sizeof(row->values));
   // if (res == -1) {
   //   printf("Error when writing to table: %s\n", strerror(errno));
-  //   exit(EXIT_FAILURE);
+  //   return 0;
   // }
   // free(tablefilename);
   // close(fd);
@@ -110,7 +112,7 @@ int add_col_cmd(struct table * table, char *args) {
   if (table->colcount > MAXIMUM_COL_COUNT) {
     table->colcount--;
     printf("Error: Column limit exceeded!\n\n");
-    exit(EXIT_FAILURE);
+    return 0;
   }
   //strcpy(table->columnnames[table->colcount - 1], args);
   
@@ -129,7 +131,7 @@ int add_col_cmd(struct table * table, char *args) {
   struct datatype * new_data_type = parse_string_to_datatype(input);
   if(!new_data_type){
     printf("ERROR: datatype %s invalid, program exiting!\n\n", input);
-    exit(EXIT_FAILURE);
+    return 0;
   }
 
   printf("Input default entry for each element in new column:\n");
@@ -142,7 +144,7 @@ int add_col_cmd(struct table * table, char *args) {
     printf("ERROR: Default entry %s couldn't be parsed to datatype ", input2);
     print_datatype(new_data_type);
     printf(", program exiting!\n\n");
-    exit(EXIT_FAILURE);
+    return 0;
   }
 
   //printf("table data size: %d\n", table->data->size);
@@ -157,7 +159,7 @@ int add_col_cmd(struct table * table, char *args) {
   char (*newcolnames)[MAXIMUM_COL_LENGTH] = realloc(table->columnnames, table->colcount * MAXIMUM_COL_LENGTH);
   if(!newcolnames){
     printf("ERROR in add_col_cmd: realloc returned null pointer, program exiting!\n\n");
-    exit(EXIT_FAILURE);
+    return 0;
   }
 
   //printf("table data size: %d\n", table->data->size);
@@ -224,7 +226,7 @@ int add_col_cmd(struct table * table, char *args) {
   }
   else {
     printf("Error when writing to table: %s\n\n", strerror(errno));
-    exit(EXIT_FAILURE);
+    return 0;
   }
 
   return 0;
@@ -252,7 +254,7 @@ void table_main(char *table_name) {
   }
   if (key == -1) {
     printf("Error: Semaphore key of table '%s' not found in the key-name pairing file!\n", table_name);
-    exit(EXIT_FAILURE);
+    return;
   }
   
   while (1) {
@@ -285,7 +287,7 @@ int table_parser(char *table_name, char *input, int key) {
   sb.sem_op = -1;
   if (semop(semd, &sb, 1) == -1) {
     printf("Error when performing an atomic operation: %s\n", strerror(errno));
-    exit(EXIT_FAILURE);
+    return 0;
   } 
 
   char *cmd = strsep(&input, " ");
@@ -303,57 +305,56 @@ int table_parser(char *table_name, char *input, int key) {
     sb.sem_op = 1;
     if (semop(semd, &sb, 1) == -1) {
       printf("Error when performing an atomic operation: %s\n", strerror(errno));
-      exit(EXIT_FAILURE);
+      return 0;
     } 
     return 0;
-  }
-  else if (!input) {
-    printf("Error: argument not supplied!\n\n");
-    exit(EXIT_FAILURE);
   }
 
   // Down by SEM_MAX - 1
   sb.sem_op = -(_POSIX_SEM_VALUE_MAX - 1);
   if (semop(semd, &sb, 1) == -1) {
     printf("Error when performing an atomic operation: %s\n", strerror(errno));
-    exit(EXIT_FAILURE);
+    return 0;
   }
   table = read_table(table_name);
+
   // Router for commands requiring an argument
   if (!strcmp(cmd, "ADDROW")) {
+    checkInput(input);
     add_row_cmd(table, input);
   }
   else if (!strcmp(cmd, "DELROW")) { // TODO: Implement DELROW
-
+    checkInput(input);
   }
   else if (!strcmp(cmd, "SETROW")) { // TODO: Implement SETROW
-
+    checkInput(input);
   }
   else if (!strcmp(cmd, "UPDATE")) { // TODO: Implement UPDATE
-
+    checkInput(input);
   }
   else if (!strcmp(cmd, "ADDCOL")) { // TODO: Implement ADDCOL
+    checkInput(input);
     add_col_cmd(table, input);
   }
   else if (!strcmp(cmd, "DELCOL")) { // TODO: Implement DELCOL
-
+    checkInput(input);
   }
   else if (!strcmp(cmd, "QUERY")) { // TODO: Implement QUERY
-
+    checkInput(input);
   }
   else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
+    checkInput(input);
     return 0;
   }
   else {
-    // TODO: Ask user to try again instead, within SELECT
     printf("Invalid command '%s'!\n\n", cmd);
-    exit(EXIT_FAILURE);
+    return 0;
   }
 
   sb.sem_op = _POSIX_SEM_VALUE_MAX;
   if (semop(semd, &sb, 1) == -1) {
     printf("Error when performing an atomic operation: %s\n", strerror(errno));
-    exit(EXIT_FAILURE);
+    return 0;
   }
 
   // v = semctl(semd, 0, GETVAL, 0);
@@ -393,7 +394,7 @@ int create_table(char *args) {
   char *table_name = strsep(&args, " ");
   if(!table_name){
     printf("ERROR: Invalid table name! Exiting!\n");
-    exit(EXIT_FAILURE);
+    return 0;
   }
   // char *file = malloc(sizeof(table_name) + sizeof(file_dir) + 1);
   // strcpy(file, file_dir);
@@ -434,7 +435,7 @@ int create_table(char *args) {
     for(int i = 0; i < col_cnt; ++i){
       free(col_names[i]);
     }
-    exit(EXIT_FAILURE);
+    return 0;
   }
   //printf("DEBUG4\n");
   // Initialize table and free col_names
@@ -450,7 +451,7 @@ int create_table(char *args) {
   }
   else {
     printf("Creation of table '%s' failed: %s\n\n", table_name, strerror(errno));
-    exit(EXIT_FAILURE);
+    return 0;
   }
 
   srand(time(NULL));
@@ -463,7 +464,7 @@ int create_table(char *args) {
   int v;
   if (semd == -1) {
       printf("Error: %s\n", strerror(errno));
-      exit(EXIT_FAILURE);
+      return 0;
   }
 
   // Set semaphore value
@@ -472,7 +473,7 @@ int create_table(char *args) {
   v = semctl(semd, 0, SETVAL, us);
   if (v == -1) {
     printf("Error: %s\n", strerror(errno));
-    exit(EXIT_FAILURE);
+    return 0;
   }
   else printf("Created semaphore with key '%d' successfully!\n", key);
 
@@ -480,14 +481,14 @@ int create_table(char *args) {
   int fd = open("./sem", O_RDONLY | O_CREAT, 0700);
   if (fd == -1) {
     printf("Error when opening semaphore file: %s\n", strerror(errno));
-    exit(EXIT_FAILURE);
+    return 0;
   }
   
   // Check if file is blank
   struct stat stat_record;
   if (fstat(fd, &stat_record) == -1) {
     printf("Error when checking semaphore file: %s\n", strerror(errno));
-    exit(EXIT_FAILURE);
+    return 0;
   }
   
   // Initialize vectors 
@@ -616,7 +617,7 @@ int drop_table(char *args) {
 
   if (remove(file) == -1) {
     printf("Removing table '%s' failed: %s\n\n", table_name, strerror(errno));
-    exit(EXIT_FAILURE);
+    return 0;
   }
   printf("Table '%s' dropped successfully!\n\n", table_name);
 
@@ -631,20 +632,22 @@ int global_parser(char *input) {
   if (!strcmp(cmd, "EXIT")) {
     return -1;
   }
-
   if (!strcmp(cmd, "SELECT")) {
+    checkInput(input);
     select_table(input);
   }
   else if (!strcmp(cmd, "CREATE")) {
+    checkInput(input);
     create_table(input);
   }
   else if (!strcmp(cmd, "DROP")) {
+    checkInput(input);
     drop_table(input);
   }
   else {
     printf("Invalid command '%s'!\n\n", cmd);
     // TODO: Ask user to try again instead
-    exit(EXIT_FAILURE);
+    return 0;
   }
 
   return 0;

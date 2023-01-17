@@ -29,6 +29,6 @@
 ## Commands
 - [X] Print column data types
 - [X] Random output of col names after commands
-- [ ] Update LANGSPECS and add help command
+- [X] Update LANGSPECS
 - [X] Fix return values for a lot of functions
 - [X] Fix issue where broken commands like 'exit' doesn't really exist and gets stuck after inputting them twice consecutively

@@ -297,6 +297,69 @@ int add_col_cmd(struct table * table, char *args) {
   return 0;
 }
 
+int del_col_cmd(struct table * table, char *args) {
+  // Parse col_index
+  int col_index = 0;
+  if (sscanf(args, "%d", &col_index) < 1) {
+    printf("Error: invalid column index. Exiting!\n");
+    return 1;
+  }
+  printf("%d\n", col_index);
+  printf("DEBUG1\n");
+
+  // TODO: FIND INPUT IN COLNAMES AND GET COL_INDEX
+  
+  // Verify col_index falls in the range
+  if (col_index < 0 || col_index >= table->colcount) {
+    printf("Error: Column index outside of the range of the table columns. Exiting!\n");
+    return 1;
+  }
+
+  // Go through each row and delete the element belonging to the column
+  for (int i = 0; i < table->rowcount; i++) {
+    struct tablerow * currow = table->data->values[i];
+    int offset = currow->schm->rowbytesize[col_index];
+    int len = get_datatype_size(currow->schm->datatypes->values[col_index]);
+    char *start = currow->data + offset;
+    char *end = currow->data + offset + len;
+    memmove(start, start + len, str(end) + 1); // DOES NOT WORK IF MOVING CHAR OR TEXT
+
+    // free(&currow->schm->rowbytesize[currow->schm->colcount - 1]);
+    // delete_vector(currow->schm->datatypes, col_index);
+
+    // Delete from tablerow schema too 
+    for (int j = col_index; j < currow->schm->colcount - 1; j++) {
+      currow->schm->rowbytesize[j] = currow->schm->rowbytesize[j + 1];
+    }
+    currow->schm->colcount--;
+  }
+
+  printf("DEBUG2\n");
+  // Delete column
+  for (int i = col_index; i < table->colcount - 1; i++) {
+    strcpy(table->columnnames[i], table->columnnames[i + 1]);
+  }
+  // free(table->columnnames[--table->colcount]);
+  --table->colcount;
+  printf("DEBUG3\n");
+  
+  // Write to table
+  if (write_table(table) == 0) {
+    printf("Column deleted successfully from table '%s'!\n\n", table->name);
+  }
+  else {
+    printf("Error when writing to table: %s\n\n", strerror(errno));
+    return 1;
+  }
+
+  printf("Updated table:\n");
+  print_table(table);
+  printf("\n");
+
+  return 0;
+}
+
+
 void table_main(char *table_name) {
   char *input = malloc(MAX_CMD_LENGTH);
   printf("Opened table '%s'. Entering table-specific shell...\n\n", table_name);
@@ -388,31 +451,33 @@ int table_parser(char *table_name, char *input, int key) {
     checkInput(input);
     add_row_cmd(table, input);
   }
-  else if (!strcmp(cmd, "DELROW")) { // TODO: Implement DELROW
+  else if (!strcmp(cmd, "DELROW")) {
     checkInput(input);
     del_row_cmd(table, input);
   }
-  else if (!strcmp(cmd, "SETROW")) { // TODO: Implement SETROW
+  else if (!strcmp(cmd, "SETROW")) {
     checkInput(input);
     set_row_cmd(table, input);
   }
-  else if (!strcmp(cmd, "UPDATE")) { // TODO: Implement UPDATE
-    checkInput(input);
-  }
-  else if (!strcmp(cmd, "ADDCOL")) { // TODO: Implement ADDCOL
+  // else if (!strcmp(cmd, "UPDATE")) { 
+  //   checkInput(input);
+  // }
+  else if (!strcmp(cmd, "ADDCOL")) { // 
     checkInput(input);
     add_col_cmd(table, input);
   }
   else if (!strcmp(cmd, "DELCOL")) { // TODO: Implement DELCOL
     checkInput(input);
+    // del_col_cmd(table, input);
+    printf("Not functional. Sorry!\n");
   }
   else if (!strcmp(cmd, "QUERY")) { // TODO: Implement QUERY
     checkInput(input);
   }
-  else if (!strcmp(cmd, "SORT")) { // TODO: Implement SORT. Warning: advanced feature! 
-    checkInput(input);
-    return 0;
-  }
+  // else if (!strcmp(cmd, "SORT")) {
+  //   checkInput(input);
+  //   return 0;
+  // }
   else {
     printf("Invalid command '%s'!\n\n", cmd);
     return 1;

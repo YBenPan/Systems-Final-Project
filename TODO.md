@@ -27,7 +27,7 @@
 - [X] Semaphore value = INTMAX. Read -= 1, Write -= INTMAX
 
 ## Commands
-- [ ] Print column data types
+- [X] Print column data types
 - [X] Random output of col names after commands
 - [ ] Update LANGSPECS and add help command
 - [X] Fix return values for a lot of functions

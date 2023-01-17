@@ -37,3 +37,6 @@ January 15:
 January 16:
 - 1:23AM: Finished semaphores (mostly) - Ben
 - 9:44PM: Implement DELROW - Ben
+- 10:50PM: Implement SETROW - Ben
+- 12:28AM: Tried implementing DELCOL. Limited functionality - Ben
+- 12:50AM: Implement PRINT TABLE and PRINT SCHEMA - Ben

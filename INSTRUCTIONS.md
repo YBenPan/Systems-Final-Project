@@ -94,4 +94,5 @@ EXIT
 - Killing the client doesn't fully kill the corresponding subserver, leaves it as a zombie process
 - Likely many memory leaks, notably tables aren't freed after you switch tables / save them
 - Trying to access one of the sample tables fails since they do not have a semaphore entry configured (they were added before we added semaphores)
-- Trying to access a table that doesn't exist fails with the wrong error message (one that is semaphore-related0
+- Trying to access a table that doesn't exist fails with the wrong error message (one that is semaphore-related)
+- Updated table after setting row is empty since write_table modifies the table. However, the table file is updated correctly.

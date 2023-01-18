@@ -96,3 +96,5 @@ EXIT
 - Trying to access one of the sample tables fails since they do not have a semaphore entry configured (they were added before we added semaphores)
 - Trying to access a table that doesn't exist fails with the wrong error message (one that is semaphore-related)
 - Updated table after setting row is empty since write_table modifies the table. However, the table file is updated correctly.
+- Semaphore file (`sem`) is created with execute permissions (`0700`) instead of `0600` or `0644`.
+- No existence of global semaphores to manage creating multiple tables at once, or dropping tables while they are being edited

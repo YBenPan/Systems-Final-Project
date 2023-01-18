@@ -84,3 +84,6 @@ EXIT
 ```
 
 # Known Bugs
+- CREATE table_name overwrites current table if it already exists. *Not really* a bug
+- Killing the server doesn't kill the clients
+- Killing the client doesn't kill the corresponding subserver

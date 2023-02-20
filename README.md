@@ -1,18 +1,14 @@
-# Competitive C Club
-
-# Members
+# Creators
 - Ben Pan
 - Frank Wong
-
-Period: **3**
         
 # A statement of the problem you are solving and/or a high level description of the project.
 
-We aim to implement a basic database management system (similar to Sqlite, Name: TBD) and a corresponding language (similar to SQL, Name: TBD). 
+We aim to implement a basic database management system (similar to Sqlite) and a corresponding language (similar to SQL) in C. 
     
 # A description as to how the project will be used (describe the user interface).
 
-The database will be stored locally. Multiple users will be able to access the database ("SELECT"), but only one will be able to make modifications (database will lock for a very short period of time) using our language.
+The database will be stored locally. Multiple users will be able to access the database, but only one will be able to make modifications (database will lock for a very short period of time) using our language.
   
 # A description of your technical design. This should include:
    
